@@ -1,0 +1,247 @@
+{
+  "software engineer": [
+    {
+      "id": 1,
+      "question": "Tell me about yourself and your background in software development.",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "question": "Describe a challenging project you worked on. What was your role and how did you overcome the challenges?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 3,
+      "question": "Explain the difference between object-oriented programming and functional programming. When would you use each?",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 4,
+      "question": "How do you approach debugging a complex issue in production? Walk me through your process.",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "question": "Describe a time when you had to work with a difficult team member. How did you handle the situation?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 6,
+      "question": "What's your experience with version control systems like Git? Can you explain branching strategies?",
+      "type": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "id": 7,
+      "question": "How do you stay updated with the latest technologies and programming trends?",
+      "type": "behavioral",
+      "difficulty": "easy"
+    }
+  ],
+  
+  "data analyst": [
+    {
+      "id": 1,
+      "question": "Tell me about yourself and your experience with data analysis.",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "question": "Describe a time when you used data to solve a business problem. What was your approach?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 3,
+      "question": "What tools and programming languages are you proficient in for data analysis?",
+      "type": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "id": 4,
+      "question": "Explain the difference between supervised and unsupervised learning. Give examples.",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "question": "How do you handle missing or inconsistent data in a dataset?",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 6,
+      "question": "Walk me through your process for creating a dashboard or data visualization.",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 7,
+      "question": "What's the most complex SQL query you've written? Explain what it did.",
+      "type": "technical",
+      "difficulty": "hard"
+    }
+  ],
+  
+  "product manager": [
+    {
+      "id": 1,
+      "question": "Tell me about yourself and your experience in product management.",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "question": "Describe a product you launched from conception to release. What was your role?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 3,
+      "question": "How do you prioritize features when you have limited resources and multiple stakeholders?",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 4,
+      "question": "Walk me through how you would design a product for [specific user group]. What would be your process?",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "question": "Tell me about a time when you had to make a difficult trade-off decision. How did you approach it?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 6,
+      "question": "How do you measure the success of a product? What metrics do you track?",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 7,
+      "question": "Describe a situation where you had to say no to a stakeholder. How did you handle it?",
+      "type": "behavioral",
+      "difficulty": "hard"
+    }
+  ],
+  
+  "marketing manager": [
+    {
+      "id": 1,
+      "question": "Tell me about yourself and your marketing experience.",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "question": "Describe a successful marketing campaign you led. What made it successful?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 3,
+      "question": "How do you measure the ROI of your marketing initiatives?",
+      "type": "technical",
+      "difficulty": "medium"
+    },
+    {
+      "id": 4,
+      "question": "What's your approach to understanding your target audience?",
+      "type": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "id": 5,
+      "question": "Tell me about a time when a campaign didn't perform as expected. What did you learn?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    }
+  ],
+  
+  "business analyst": [
+    {
+      "id": 1,
+      "question": "Tell me about yourself and your experience in business analysis.",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "question": "Describe a project where you had to gather requirements from multiple stakeholders. How did you ensure all needs were met?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 3,
+      "question": "What tools and techniques do you use for process modeling and documentation?",
+      "type": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "id": 4,
+      "question": "How do you handle conflicting requirements from different stakeholders?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "question": "Walk me through how you would analyze a business process and identify areas for improvement.",
+      "type": "technical",
+      "difficulty": "medium"
+    }
+  ],
+  
+  "default": [
+    {
+      "id": 1,
+      "question": "Tell me about yourself and why you're interested in this position.",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 2,
+      "question": "What are your greatest strengths and how do they relate to this role?",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 3,
+      "question": "Describe a challenging situation you faced and how you resolved it.",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 4,
+      "question": "Tell me about a time when you had to learn something new quickly. How did you approach it?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "question": "Where do you see yourself in 5 years?",
+      "type": "behavioral",
+      "difficulty": "easy"
+    },
+    {
+      "id": 6,
+      "question": "Why should we hire you for this position?",
+      "type": "behavioral",
+      "difficulty": "medium"
+    },
+    {
+      "id": 7,
+      "question": "Describe a time when you worked as part of a team. What was your role?",
+      "type": "behavioral",
+      "difficulty": "easy"
+    }
+  ]
+}
