@@ -10,7 +10,8 @@ class QuestionGenerator:
             self.client = OpenAI(api_key=self.api_key)
         else:
             self.client = None
-            print("⚠️ Warning: No OpenAI API key found. Using fallback questions.")
+            print("OpenAI API KEY not available.")
+            print("Using Backup question templates.")
         
         # Default profile 
         self.default_profile = {
@@ -28,7 +29,6 @@ class QuestionGenerator:
         profile: Optional[Dict] = None,
         num_questions: int = 5
     ) -> List[Dict]:
-        # Use default profile if none provided
         if profile is None:
             profile = self.default_profile
         
@@ -40,8 +40,8 @@ class QuestionGenerator:
                     print(f"✅ Generated {len(questions)} questions using GPT-4")
                     return questions
             except Exception as e:
-                print(f"⚠️ GPT-4 generation failed: {e}")
-                print("📦 Falling back to template questions...")
+                print(f"GPT-4 generation failed: {e}")
+                print(" Falling back to template questions...")
         
         # Fallback to template questions
         return self._get_fallback_questions(profile, num_questions)
@@ -108,13 +108,9 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                 content = content[:-3]
             
             content = content.strip()
-            
-            # Parse JSON
             questions = json.loads(content)
-            
-            # Validate structure
+
             if isinstance(questions, list) and len(questions) > 0:
-                # Ensure all questions have required fields
                 for i, q in enumerate(questions):
                     if "question" not in q:
                         raise ValueError(f"Question {i} missing 'question' field")
@@ -125,15 +121,15 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                     if "difficulty" not in q:
                         q["difficulty"] = "medium"
                 
-                return questions[:num_questions]  # Return exactly num_questions
+                return questions[:num_questions] 
             
             return None
             
         except json.JSONDecodeError as e:
-            print(f"❌ Failed to parse GPT-4 JSON response: {e}")
+            print(f"Failed to parse GPT-4 JSON response: {e}")
             return None
         except Exception as e:
-            print(f"❌ GPT-4 API error: {e}")
+            print(f"GPT-4 API error: {e}")
             return None
     
     def _get_fallback_questions(
@@ -143,17 +139,9 @@ Important: Return ONLY the JSON array, no other text or explanation."""
     ) -> List[Dict]:
 
         job_role = profile.get("job_role", "Software Engineer").lower()
-        
-        # Load role-specific templates
         templates = self._load_question_templates()
-        
-        # Get questions for this role 
         role_questions = templates.get(job_role, templates.get("default", []))
-        
-        # Return requested number of questions
         questions = role_questions[:num_questions]
-        
-        # If not enough questions, pad with default questions
         if len(questions) < num_questions:
             default_qs = templates.get("default", [])
             remaining = num_questions - len(questions)
@@ -165,8 +153,7 @@ Important: Return ONLY the JSON array, no other text or explanation."""
     def _load_question_templates(self) -> Dict[str, List[Dict]]:
 
         template_path = "data/question_templates/questions.json"
-        
-        # Try to load from file
+
         if os.path.exists(template_path):
             try:
                 with open(template_path, 'r') as f:
@@ -298,7 +285,7 @@ Important: Return ONLY the JSON array, no other text or explanation."""
             questions: List of question dictionaries
             filename: Output filename
         """
-        output_dir = "data/Report"
+        output_dir = "data/Questions"
         os.makedirs(output_dir, exist_ok=True)
         
         filepath = os.path.join(output_dir, filename)
