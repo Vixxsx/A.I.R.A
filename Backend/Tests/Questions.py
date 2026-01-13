@@ -3,13 +3,10 @@ import sys
 backend_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
-
-from models.Question_Generator import QuestionGenerator
-
+from Models.Question_Generator import QuestionGenerator
 print("\n" + "="*70)
 print("🎯 AIRA - Question Generator Display Test")
 print("="*70 + "\n")
-
 # Create generator
 generator = QuestionGenerator()
 
@@ -23,9 +20,7 @@ print(f"📋 GENERATED {len(questions)} INTERVIEW QUESTIONS")
 print("="*70 + "\n")
 
 for i, q in enumerate(questions, 1):
-    print(f"{'='*70}")
     print(f"QUESTION {i}")
-    print(f"{'='*70}")
     print(f"\n{q['question']}\n")
     print(f"Type: {q['type'].upper()}")
     print(f"Difficulty: {q['difficulty'].upper()}")

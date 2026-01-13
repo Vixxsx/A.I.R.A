@@ -6,8 +6,8 @@ import os
 import shutil
 from datetime import datetime
 
-from models.whisper_stt import WhisperSTT
-from models.filler_word_detection import FillerDetector
+from Models.whisper_stt import WhisperSTT
+from Models.filler_word_detection import FillerDetector
 
 # Create FastAPI app
 app = FastAPI(

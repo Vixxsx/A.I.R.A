@@ -1,24 +1,10 @@
 import warnings
 warnings.filterwarnings("ignore", message="FP16 is not supported on CPU")
-"""
-USAGE:
-from models.whisper_stt import WhisperSTT
-
-stt = WhisperSTT(model_size="base")
-result = stt.transcribe_audio("audio.wav")
-print(result["text"])
-"""
-
 import whisper
 import json
 import os
 from datetime import datetime
-
 class WhisperSTT:
-    """
-    Whisper Speech-to-Text Pipeline
-    Week 1-2: Core transcription module
-    """
     
     def __init__(self, model_size="base"):
 
@@ -118,20 +104,7 @@ class WhisperSTT:
             transcript_data: Output from transcribe_audio()
             output_path: Path to save JSON file
         """
-
-    
     def transcribe_and_save(self, audio_path, output_dir="data/transcripts", language="en"):
-        """
-        Convenience method: Transcribe audio and save results
-        
-        Args:
-            audio_path: Path to audio file
-            output_dir: Directory to save transcript
-            language: Language code
-        
-        Returns:
-            tuple: (transcript_data, saved_file_path)
-        """
         # Transcribe
         transcript_data = self.transcribe_audio(audio_path, language)
         

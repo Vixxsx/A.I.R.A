@@ -2,7 +2,7 @@ import json
 import os
 from typing import List, Dict, Optional
 from openai import OpenAI
-
+import random
 class QuestionGenerator:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
@@ -20,8 +20,7 @@ class QuestionGenerator:
             "experience_level": "Entry Level",
             "company_type": "Tech Startup"
         }
-        
-        # Default number of questions
+        # Default question number
         self.default_question_count = 5
     
     def generate_questions(
@@ -122,16 +121,13 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                         q["difficulty"] = "medium"
                 
                 return questions[:num_questions] 
-            
-            return None
-            
+            return None 
         except json.JSONDecodeError as e:
             print(f"Failed to parse GPT-4 JSON response: {e}")
             return None
         except Exception as e:
             print(f"GPT-4 API error: {e}")
             return None
-    
     def _get_fallback_questions(
         self, 
         profile: Dict, 
@@ -140,14 +136,17 @@ Important: Return ONLY the JSON array, no other text or explanation."""
 
         job_role = profile.get("job_role", "Software Engineer").lower()
         templates = self._load_question_templates()
-        role_questions = templates.get(job_role, templates.get("default", []))
-        questions = role_questions[:num_questions]
+        role_questions = templates.get(job_role, templates.get("basic", []))
+        shuffled_questions = role_questions.copy()
+        random.shuffle(shuffled_questions)
+        questions = shuffled_questions[:num_questions]
+
         if len(questions) < num_questions:
-            default_qs = templates.get("default", [])
+            basic_qs = templates.get("basic", [])
             remaining = num_questions - len(questions)
-            questions.extend(default_qs[:remaining])
+            questions.extend(basic_qs[:remaining])
         
-        print(f"📦 Using {len(questions)} fallback questions for: {job_role}")
+        print(f"Using {len(questions)} fallback questions for: {job_role}")
         return questions
     
     def _load_question_templates(self) -> Dict[str, List[Dict]]:
@@ -159,7 +158,7 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                 with open(template_path, 'r') as f:
                     return json.load(f)
             except Exception as e:
-                print(f"⚠️ Error loading templates from file: {e}")
+                print(f"Error loading templates from file: {e}")
         
         # Hardcoded fallback templates
         return {
@@ -205,6 +204,24 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                     "question": "How do you stay updated with the latest technologies and programming trends?",
                     "type": "behavioral",
                     "difficulty": "easy"
+                },
+                {
+                    "id": 8,
+                    "question": "Explain the concept of RESTful APIs. How would you design one for a user management system?",
+                    "type": "technical",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 9,
+                    "question": "Describe your experience with testing. What's the difference between unit tests, integration tests, and end-to-end tests?",
+                    "type": "technical",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 10,
+                    "question": "Tell me about a time when you had to learn a new technology quickly. How did you approach it?",
+                    "type": "behavioral",
+                    "difficulty": "easy"
                 }
             ],
             "data analyst": [
@@ -237,9 +254,39 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                     "question": "How do you handle missing or inconsistent data in a dataset?",
                     "type": "technical",
                     "difficulty": "medium"
+                },
+                {
+                    "id": 6,
+                    "question": "Walk me through how you would analyze customer churn data. What metrics would you focus on?",
+                    "type": "technical",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 7,
+                    "question": "Explain what a p-value is and how you would use it in hypothesis testing.",
+                    "type": "technical",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 8,
+                    "question": "Describe a time when your analysis led to a significant business decision or change.",
+                    "type": "behavioral",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 9,
+                    "question": "How do you communicate complex data insights to non-technical stakeholders?",
+                    "type": "behavioral",
+                    "difficulty": "easy"
+                },
+                {
+                    "id": 10,
+                    "question": "What's your experience with SQL? Can you explain the difference between JOIN types?",
+                    "type": "technical",
+                    "difficulty": "easy"
                 }
             ],
-            "default": [
+            "basic": [
                 {
                     "id": 1,
                     "question": "Tell me about yourself and why you're interested in this position.",
@@ -267,6 +314,36 @@ Important: Return ONLY the JSON array, no other text or explanation."""
                 {
                     "id": 5,
                     "question": "Why should we hire you for this position?",
+                    "type": "behavioral",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 6,
+                    "question": "What is your greatest weakness and how are you working to improve it?",
+                    "type": "behavioral",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 7,
+                    "question": "Tell me about a time when you failed. What did you learn from it?",
+                    "type": "behavioral",
+                    "difficulty": "medium"
+                },
+                {
+                    "id": 8,
+                    "question": "How do you prioritize tasks when you have multiple deadlines?",
+                    "type": "behavioral",
+                    "difficulty": "easy"
+                },
+                {
+                    "id": 9,
+                    "question": "Describe a situation where you had to work as part of a team to achieve a goal.",
+                    "type": "behavioral",
+                    "difficulty": "easy"
+                },
+                {
+                    "id": 10,
+                    "question": "Why are you leaving your current job, or why did you leave your last position?",
                     "type": "behavioral",
                     "difficulty": "medium"
                 }
