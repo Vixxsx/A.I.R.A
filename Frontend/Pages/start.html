@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AIRA - Welcome</title>
+    <link rel="stylesheet" href="../Components/style.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jersey+10&display=swap');
+        /* 1. Initial State: Solid White Page */
+        .splash-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 999;
+            animation: fadeToBackground 1.5s ease-in-out forwards;
+            pointer-events: none;
+        }
+        @keyframes fadeToBackground {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .start-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+        .brand-title {
+            font-family: "Jersey 10", serif;
+            font-size: 100px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: revealContent 0.8s ease-out 1.2s forwards;
+        }
+        .brand-subtitle {
+            font-family: "Jersey 10", serif;
+            font-size: 52px;
+            font-weight: 300;
+            margin: 20px 0 40px 0;
+            opacity: 0;
+            animation: revealContent 0.8s ease-out 2.2s forwards;
+        }
+        .brand-subsubtitle {
+            font-family: "Jersey 10", serif;
+            font-size: 32px;
+            font-weight: 300;
+            margin: 20px 0 40px 0;
+            opacity: 0;
+            animation: revealContent 0.8s ease-out 3.2s forwards;
+        }
+        .start-btn {
+            padding: 15px 40px;
+            border: 2px solid white;
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: 0.3s;
+            animation: revealContent 0.8s ease-out 4.0s forwards;
+        }
+
+        .start-btn:hover {
+            background: white;
+            color: #1a1a2e;
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+        }
+
+        @keyframes revealContent {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-overlay"></div>
+
+    <div class="start-wrapper">
+        <h1 class="brand-title">AIRA</h1>
+        <p class="brand-subtitle">Automated Interview & Response Analyzer</p>
+        <p class="brand-subsubtitle">Created by Neha Babu,Neha Sudheesh, Sadhika Saji, Vishnu Dilish</p>
+        
+        <a href="Login.html?dir=right" class="start-btn">Get Started</a>
+    </div>
+</body>
+</html>

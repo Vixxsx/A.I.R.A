@@ -49,7 +49,7 @@ class VideoProcessor():
             timestamp=datetime.now().strftime("%Y%m%d_%H%M%S")
             filename=f"video_{timestamp}.mp4"
         output_path=os.path.join(self.raw_path,filename)
-        cap=cv2.VideoCapture(camera_index)
+        cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
         if not cap.isOpened():
             raise Exception(f"Camera {camera_index} not accessible")
         width=int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -82,7 +82,8 @@ class VideoProcessor():
     def video_info(self,video_path:str)->Dict[str,any]:
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file",video_path, "does not exist")
-        cap=cv2.VideoCapture(video_path)
+        cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+
         if not cap.isOpened():
             raise Exception("Could not open video file",video_path)
         try:
@@ -100,8 +101,9 @@ class VideoProcessor():
                 "frame_count":frame_count,
                 "width":width,
                 "height":height,
+                "resolution":f"{width}x{height}",
                 "duration_seconds":duration,
-                "duration_formatted":self.__format__duration(duration),
+                "duration_formatted":self._format_duration(duration),
                 "file_size_bytes":file_size,
                 "file_size_mb":file_size_mb
             }
@@ -111,7 +113,7 @@ class VideoProcessor():
     def extract_frames(self,video_path:str,output_folder:Optional[str]=None,every_nth:int=10,max_frames:Optional[int]=None,return_arrays:bool=True)->List[np.ndarray]:
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file",video_path, "does not exist")
-        cap=cv2.VideoCapture(video_path)
+        cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
         if not cap.isOpened():
             raise Exception("Could not open video file",video_path)
         if output_folder:
@@ -119,6 +121,7 @@ class VideoProcessor():
         frames=[]
         frame_index=0
         extracted_count=0
+        saved_count=0
         print("Extracting frames from ",os.path.basename(video_path))
         print("Every Nth Frame:",every_nth)
         try:
@@ -148,7 +151,7 @@ class VideoProcessor():
     def extract_frames_by_time(self,video_path:str,timestamps:List[float],output_folder:Optional[str]=None,)->List[np.ndarray]:
         if not os.path.exists(video_path):
             raise FileNotFoundError("Video not found:",video_path)
-        cap=cv2.VideoCapture(video_path)
+        cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
         fps=cap.get(cv2.CAP_PROP_FPS)
         if output_folder:
             os.makedirs(output_folder,exist_ok=True)

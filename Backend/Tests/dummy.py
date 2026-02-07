@@ -1,13 +1,12 @@
-import os
-import sys
+from Backend.Utilities.video_utils import VideoProcessor
 
+processor = VideoProcessor()
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-backend_path = os.path.dirname(current_dir)  # Up one level to Backend/
+# Find DroidCam
+cameras = processor.get_available_cameras()
+print(f"Available cameras: {cameras}")
 
-print(f"Adding to path: {backend_path}")
-sys.path.insert(0, backend_path)
-
-from Utilities.video_utils import VideoProcessor
-
-print("✅ Import successful!")
+# Test each one
+for idx in cameras:
+    print(f"\nTesting camera {idx}:")
+    processor.test_webcam(camera_index=idx)

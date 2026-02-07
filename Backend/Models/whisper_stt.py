@@ -4,46 +4,59 @@ import whisper
 import json
 import os
 from datetime import datetime
+
 class WhisperSTT:
     
     def __init__(self, model_size="base"):
-
         print(f"🎤 Loading Whisper '{model_size}' model...")
         self.model = whisper.load_model(model_size)
         self.model_size = model_size
         print(f"✅ Whisper model '{model_size}' loaded successfully!")
-    
     def transcribe_audio(self, audio_path, language="en"):
         if not os.path.exists(audio_path):
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
-        
         print(f"\n🎤 Transcribing: {audio_path}")
         
         result = self.model.transcribe(
             audio_path,
             language=language,
             task="transcribe",
-            verbose=False
+            verbose=False,
+            word_timestamps=True,  # Get word-level detail
+            condition_on_previous_text=False,  # Don't clean up based on context
+            compression_ratio_threshold=2.4,  # More lenient, preserves more words
+            no_speech_threshold=0.6  # Lower threshold = catches more speech
         )
+        raw_transcript = ""
+        if "segments" in result:
+            for segment in result["segments"]:
+                if "words" in segment:
+                    # Get each word exactly as spoken
+                    for word_data in segment["words"]:
+                        raw_transcript += word_data["word"] + " "
+                else:
+                    raw_transcript += segment["text"] + " "
+        if not raw_transcript.strip():
+            raw_transcript = result["text"]
+        
+        raw_transcript = raw_transcript.strip()
         
         transcript_data = {
-            "text": result["text"].strip(),
+            "text": raw_transcript, 
             "language": result["language"],
             "segments": self._process_segments(result["segments"]),
             "duration": result["segments"][-1]["end"] if result["segments"] else 0,
-            "word_count": len(result["text"].strip().split()),
+            "word_count": len(raw_transcript.split()),
             "timestamp": datetime.now().isoformat(),
-            "model_used": self.model_size
+            "model_used": self.model_size,
+            "audio_file": os.path.basename(audio_path)
         }
-        
         print(f"✅ Transcription complete!")
-        print(f"📝 Preview: {transcript_data['text'][:100]}...")
+        print(f"📝 Transcript: {transcript_data['text'][:100]}...")
         print(f"📊 Word count: {transcript_data['word_count']}")
-        
         return transcript_data
     
     def _process_segments(self, segments):
-
         processed = []
         for seg in segments:
             processed.append({
@@ -56,24 +69,10 @@ class WhisperSTT:
         return processed
     
     def get_speaking_stats(self, transcript_data):
-        """
-        Calculate basic speaking statistics
-        Useful for Week 5 fluency analysis
-        
-        Args:
-            transcript_data: Output from transcribe_audio()
-        
-        Returns:
-            dict: Speaking statistics
-        """
         segments = transcript_data["segments"]
         total_duration = transcript_data["duration"]
         total_words = transcript_data["word_count"]
-        
-        # Calculate speaking time
         speaking_time = sum(seg["duration"] for seg in segments)
-        
-        # Calculate pause information
         pauses = []
         for i in range(len(segments) - 1):
             pause_duration = segments[i + 1]["start"] - segments[i]["end"]
@@ -96,35 +95,52 @@ class WhisperSTT:
         
         return stats
     
-    def save_transcript(self, transcript_data, output_path):
-        """
-        Save transcript to JSON file
+    def save_transcript(self, transcript_data, filename=None, output_dir="Data/Transcript"):
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"transcript_{timestamp}.json"
         
-        Args:
-            transcript_data: Output from transcribe_audio()
-            output_path: Path to save JSON file
-        """
-    def transcribe_and_save(self, audio_path, output_dir="data/transcripts", language="en"):
-        # Transcribe
-        transcript_data = self.transcribe_audio(audio_path, language)
+        # Ensure .json extension
+        if not filename.endswith('.json'):
+            filename += '.json'
         
-        # Generate output filename
-        audio_filename = os.path.basename(audio_path)
-        output_filename = f"{os.path.splitext(audio_filename)[0]}_transcript.json"
-        output_path = os.path.join(output_dir, output_filename)
+        output_path = os.path.join(output_dir, filename)
         
-        # Save
-        saved_path = self.save_transcript(transcript_data, output_path)
+        # Save to JSON file (save entire transcript_data)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(transcript_data, f, indent=2, ensure_ascii=False)
         
-        return transcript_data, saved_path
+        print(f"✅ Transcript saved: {output_path}")
+        return output_path
+    
+    def load_transcript(self, filepath):
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"Transcript not found: {filepath}")
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        print(f"✅ Transcript loaded: {filepath}")
+        return data
+    
+    def transcribe_and_save(self, audio_path, save_transcript=True):
+        result = self.transcribe_audio(audio_path)
+        saved_path = None
+        if save_transcript:
+            audio_name = os.path.splitext(os.path.basename(audio_path))[0]
+            transcript_filename = f"{audio_name}_transcript.json"
+            saved_path = self.save_transcript(result, filename=transcript_filename)
+        
+        return {
+            "transcription": result,
+            "saved_to": saved_path
+        }
 
 
-# ========== TESTING SCRIPT ==========
+# ========== TESTING==========
 
 def test_whisper():
-    """
-    Test Whisper with sample audio
-    """
+    """Test Whisper with sample audio"""
     print("="*70)
     print("🧪 WHISPER TESTING")
     print("="*70)
@@ -133,57 +149,30 @@ def test_whisper():
     stt = WhisperSTT(model_size="base")
     
     # Test audio file path
-    test_audio = "data/Audio/test_audio.wav"
+    test_audio = "Data/Audio/test_audio.wav"
     
     if not os.path.exists(test_audio):
         print(f"\n⚠️ Test audio file not found: {test_audio}")
-
-    
-    # Transcribe
+        return
     print("\n" + "="*70)
     transcript = stt.transcribe_audio(test_audio)
-    
-    # Get stats
     stats = stt.get_speaking_stats(transcript)
-    
-    # Display results
     print("\n" + "="*70)
     print("📊 TRANSCRIPTION RESULTS")
     print("="*70)
     print(f"\n📝 Full Transcript:\n{transcript['text']}\n")
-    
     print("="*70)
     print("⏱️ SPEAKING STATISTICS:")
     print("="*70)
     for key, value in stats.items():
         print(f"  • {key.replace('_', ' ').title()}: {value}")
-    
-    # Save to file
     print("\n" + "="*70)
-    output_file = "data/Transcript/test_transcript.json"
-    stt.save_transcript(transcript, output_file)
+    output_path = stt.save_transcript(transcript)
     
     print("\n" + "="*70)
-    print("TRANSCRIPTION COMPLETE!")
+    print("✅ TRANSCRIPTION COMPLETE!")
     print("="*70)
 
-def save_transcript(self, transcript_data, output_path):
-    """
-    Save transcript to JSON file
-    
-    Args:
-        transcript_data: Output from transcribe_audio()
-        output_path: Path to save JSON file
-    """
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    
-    import json
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(transcript_data, f, indent=2, ensure_ascii=False)
-    
-    print(f"💾 Transcript saved to: {output_path}")
-    return output_path
 
 if __name__ == "__main__":
     test_whisper()
-

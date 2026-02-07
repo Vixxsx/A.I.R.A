@@ -2,8 +2,6 @@ import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 backend_path = os.path.dirname(current_dir)  
-
-print(f"Adding to path: {backend_path}")
 sys.path.insert(0, backend_path)
 
 from Utilities.video_utils import VideoProcessor
@@ -89,6 +87,7 @@ def test_capture_video():
         
         video_path = processor.capture_video(
             duration=5,
+            camera_index=1,
             filename="test_video.mp4"
         )
         
@@ -130,10 +129,9 @@ def test_frame_extraction():
         frames = processor.extract_frames(
             video_path=test_video,
             output_folder=output_folder,
-            every_n=10,
+            every_nth=10,
             return_arrays=True
         )
-        
         print(f"\n✅ Extracted {len(frames)} frames")
         print(f"   Saved to: {output_folder}")
         print(f"   Frame shape: {frames[0].shape if frames else 'N/A'}")
@@ -141,7 +139,7 @@ def test_frame_extraction():
         return frames
         
     except Exception as e:
-        print(f"\n❌ Frame extraction failed: {e}")
+        print(f"\nFrame extraction failed: {e}")
         return None
 
 

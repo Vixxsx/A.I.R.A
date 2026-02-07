@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Interview Feedback Analyzer</title>
+    <link rel="stylesheet" href="../Components/style.css">
+</head>
+<body>
+    <div class="auth-card">
+        <div class="side-panel">
+            <div style="font-size: 40px; margin-bottom: 10px;">🎤</div>
+            <h2>Interview Analyzer</h2>
+            <p>Transform interview feedback into actionable insights with AI-powered analytics.</p>
+            <ul class="feature-list">
+                <li>✓ AI-Powered Analysis</li>
+                <li>✓ Real-time Processing</li>
+                <li>✓ Performance Dashboards</li>
+                <li>✓ Comprehensive Reports</li>
+            </ul>
+        </div>
+
+        <div class="form-panel">
+            <div class="form-header">
+                <div style="font-size: 40px;">👤</div>
+                <h1>Welcome Back</h1>
+                <p style="color: #666; font-size: 14px; margin-top: 5px;">Login to access your dashboard</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-container">
+                        <span class="field-icon">👤</span>
+                        <input type="text" id="username" placeholder="Enter your username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-container">
+                        <span class="field-icon">🔒</span>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; margin-bottom: 25px; font-size: 13px;">
+                    <label style="display: flex; align-items: center; cursor: pointer; color: #555;">
+                        <input type="checkbox" id="rememberMe" style="margin-right: 8px;">
+                        Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">LOGIN</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 25px; font-size: 14px;">
+                New to Interview Analyzer? <a href="register.html?dir=right" style="color: #6366f1; font-weight: 700; text-decoration: none;">Create Account</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../Assets/auth.js"></script>
+</body>
+</html>
