@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRA - Backend Connection Test</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #1e1b4b);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .test-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #a855f7;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .result {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status.success { background: #10b981; }
+        .status.error { background: #ef4444; }
+        .status.pending { background: #f59e0b; }
+        
+        .link-section {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .link-section a {
+            color: #a855f7;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 15px;
+        }
+        
+        .link-section a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔌 AIRA Backend Connection Test</h1>
+        <p class="subtitle">Test all integration points before using the main app</p>
+        
+        <!-- Test 1: Basic Connection -->
+        <div class="test-section">
+            <h3>1. Backend Connection <span id="status1" class="status pending">Not Tested</span></h3>
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="result1" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Test 2: Auth API -->
+        <div class="test-section">
+            <h3>2. Authentication API <span id="status2" class="status pending">Not Tested</span></h3>
+            <button onclick="testAuthAPI()">Test Auth API</button>
+            <div id="result2" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Test 3: Register Test User -->
+        <div class="test-section">
+            <h3>3. User Registration <span id="status3" class="status pending">Not Tested</span></h3>
+            <button onclick="testRegister()">Register Test User</button>
+            <div id="result3" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Test 4: Login Test User -->
+        <div class="test-section">
+            <h3>4. User Login <span id="status4" class="status pending">Not Tested</span></h3>
+            <button onclick="testLogin()">Login Test User</button>
+            <div id="result4" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Test 5: View All Users -->
+        <div class="test-section">
+            <h3>5. View Registered Users <span id="status5" class="status pending">Not Tested</span></h3>
+            <button onclick="viewUsers()">View All Users</button>
+            <div id="result5" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- Quick Action Buttons -->
+        <div class="test-section">
+            <h3>🚀 Quick Actions</h3>
+            <button onclick="runAllTests()">Run All Tests</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <!-- Links to Main App -->
+        <div class="link-section">
+            <p style="margin-bottom: 15px;">✅ Tests passed? Go to the app:</p>
+            <a href="Login.html">Login Page</a>
+            <a href="Register.html">Register Page</a>
+            <a href="http://localhost:8000/docs" target="_blank">API Docs</a>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        // Test 1: Basic Connection
+        async function testConnection() {
+            const resultDiv = document.getElementById('result1');
+            const statusDiv = document.getElementById('status1');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '⏳ Testing connection...';
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                resultDiv.textContent = `✅ SUCCESS!\n\n${JSON.stringify(data, null, 2)}`;
+                statusDiv.textContent = 'Connected';
+                statusDiv.className = 'status success';
+            } catch (error) {
+                resultDiv.textContent = `❌ FAILED!\n\nError: ${error.message}\n\nMake sure FastAPI is running on http://localhost:8000`;
+                statusDiv.textContent = 'Failed';
+                statusDiv.className = 'status error';
+            }
+        }
+        
+        // Test 2: Auth API
+        async function testAuthAPI() {
+            const resultDiv = document.getElementById('result2');
+            const statusDiv = document.getElementById('status2');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '⏳ Testing auth endpoints...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/test`);
+                const data = await response.json();
+                
+                resultDiv.textContent = `✅ SUCCESS!\n\n${JSON.stringify(data, null, 2)}`;
+                statusDiv.textContent = 'Working';
+                statusDiv.className = 'status success';
+            } catch (error) {
+                resultDiv.textContent = `❌ FAILED!\n\nError: ${error.message}\n\nAuth routes not loaded!`;
+                statusDiv.textContent = 'Failed';
+                statusDiv.className = 'status error';
+            }
+        }
+        
+        // Test 3: Register Test User
+        async function testRegister() {
+            const resultDiv = document.getElementById('result3');
+            const statusDiv = document.getElementById('status3');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '⏳ Registering test user...';
+            
+            const testUser = {
+                username: 'testuser' + Date.now(),
+                email: `test${Date.now()}@aira.com`,
+                phone: '9876543210',
+                dob: '2000-01-01',
+                password: 'test123'
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ SUCCESS!\n\nUser: ${testUser.username}\nEmail: ${testUser.email}\n\n${JSON.stringify(data, null, 2)}`;
+                    statusDiv.textContent = 'Success';
+                    statusDiv.className = 'status success';
+                    
+                    // Store for login test
+                    localStorage.setItem('testUser', JSON.stringify(testUser));
+                } else {
+                    resultDiv.textContent = `⚠️ FAILED!\n\n${JSON.stringify(data, null, 2)}`;
+                    statusDiv.textContent = 'Failed';
+                    statusDiv.className = 'status error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ ERROR!\n\n${error.message}`;
+                statusDiv.textContent = 'Error';
+                statusDiv.className = 'status error';
+            }
+        }
+        
+        // Test 4: Login Test User
+        async function testLogin() {
+            const resultDiv = document.getElementById('result4');
+            const statusDiv = document.getElementById('status4');
+            resultDiv.style.display = 'block';
+            
+            const testUser = JSON.parse(localStorage.getItem('testUser') || '{}');
+            
+            if (!testUser.username) {
+                resultDiv.textContent = '⚠️ Please run "Register Test User" first!';
+                return;
+            }
+            
+            resultDiv.textContent = '⏳ Logging in...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: testUser.username,
+                        password: testUser.password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ LOGIN SUCCESS!\n\nUser: ${testUser.username}\n\n${JSON.stringify(data, null, 2)}`;
+                    statusDiv.textContent = 'Success';
+                    statusDiv.className = 'status success';
+                } else {
+                    resultDiv.textContent = `⚠️ LOGIN FAILED!\n\n${JSON.stringify(data, null, 2)}`;
+                    statusDiv.textContent = 'Failed';
+                    statusDiv.className = 'status error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ ERROR!\n\n${error.message}`;
+                statusDiv.textContent = 'Error';
+                statusDiv.className = 'status error';
+            }
+        }
+        
+        // Test 5: View Users
+        async function viewUsers() {
+            const resultDiv = document.getElementById('result5');
+            const statusDiv = document.getElementById('status5');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = '⏳ Fetching users...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/users`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.textContent = `✅ Found ${data.total_users} user(s)\n\n${JSON.stringify(data.users, null, 2)}`;
+                    statusDiv.textContent = 'Success';
+                    statusDiv.className = 'status success';
+                } else {
+                    resultDiv.textContent = `⚠️ FAILED!\n\n${JSON.stringify(data, null, 2)}`;
+                    statusDiv.textContent = 'Failed';
+                    statusDiv.className = 'status error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ ERROR!\n\n${error.message}`;
+                statusDiv.textContent = 'Error';
+                statusDiv.className = 'status error';
+            }
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            await testConnection();
+            await new Promise(r => setTimeout(r, 500));
+            await testAuthAPI();
+            await new Promise(r => setTimeout(r, 500));
+            await testRegister();
+            await new Promise(r => setTimeout(r, 500));
+            await testLogin();
+            await new Promise(r => setTimeout(r, 500));
+            await viewUsers();
+        }
+        
+        // Clear all results
+        function clearResults() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`result${i}`).style.display = 'none';
+                document.getElementById(`status${i}`).textContent = 'Not Tested';
+                document.getElementById(`status${i}`).className = 'status pending';
+            }
+        }
+        
+        // Auto-test connection on load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>

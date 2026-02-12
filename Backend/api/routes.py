@@ -460,13 +460,5 @@ async def test_video_processor():
         raise HTTPException(
             status_code=500,
             detail=f"Video processor test failed: {str(e)}"
-        )from fastapi import APIRouter, UploadFile, File, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List, Dict
-import os
-import shutil
-
-# Import video utilities
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from Utilities.video_utils import VideoProcessor
+        )  
+    

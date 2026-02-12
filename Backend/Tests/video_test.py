@@ -8,7 +8,6 @@ from Utilities.video_utils import VideoProcessor
 
 
 def test_webcam():
-    """Test 1: Webcam availability"""
     print("\n" + "="*70)
     print("TEST 1: Webcam Check")
     print("="*70 + "\n")
@@ -18,16 +17,15 @@ def test_webcam():
     result = processor.test_webcam(camera_index=0)
     
     if result:
-        print("\nWebcam test PASSED")
+        print("\n✅ Webcam test PASSED")
     else:
-        print("\nWebcam test FAILED")
-        print("   Make sure your camera is connected and not used by another app")
+        print("\n❌ Webcam test FAILED")
+        print("Make sure your camera is connected and not used by another app")
     
     return result
 
 
 def test_find_cameras():
-    """Test 2: Find all available cameras"""
     print("\n" + "="*70)
     print("TEST 2: Find Available Cameras")
     print("="*70 + "\n")
@@ -36,15 +34,12 @@ def test_find_cameras():
     cameras = processor.get_available_cameras()
     
     if cameras:
-        print(f"\nFound {len(cameras)} camera(s): {cameras}")
+        print(f"\n✅ Found {len(cameras)} camera(s): {cameras}")
     else:
-        print("\nNo cameras found")
+        print("\n❌ No cameras found")
     
     return cameras
-
-
 def test_video_info():
-    """Test 3: Get video information"""
     print("\n" + "="*70)
     print("TEST 3: Video Info (if test video exists)")
     print("="*70 + "\n")
@@ -53,9 +48,9 @@ def test_video_info():
     test_video = "Data/Video/Raw/test_video.mp4"
     
     if os.path.exists(test_video):
-        info = processor.video_info(test_video)
+        info = processor.get_video_info(test_video)
         
-        print("Video Information:")
+        print("✅ Video Information:")
         print(f"  Filename: {info['filename']}")
         print(f"  Resolution: {info['resolution']}")
         print(f"  FPS: {info['fps']}")
@@ -63,16 +58,15 @@ def test_video_info():
         print(f"  Frame Count: {info['frame_count']}")
         print(f"  File Size: {info['file_size_mb']} MB")
         
-        print("\nVideo info retrieved successfully")
+        print("\n✅ Video info retrieved successfully")
         return info
     else:
-        print(f"No test video found at: {test_video}")
+        print(f"⚠️  No test video found at: {test_video}")
         print("   Run test_capture_video() first to create one")
         return None
 
 
 def test_capture_video():
-    """Test 4: Capture short video"""
     print("\n" + "="*70)
     print("TEST 4: Video Capture (5 seconds)")
     print("="*70 + "\n")
@@ -80,22 +74,22 @@ def test_capture_video():
     processor = VideoProcessor()
     
     try:
-        print("Starting capture in 3 seconds...")
+        print("🎥 Starting capture in 3 seconds...")
         print("   Look at your camera!")
         import time
         time.sleep(3)
         
         video_path = processor.capture_video(
             duration=5,
-            camera_index=1,
+            camera_index=1,  # DroidCam
             filename="test_video.mp4"
         )
         
-        print(f"\nVideo captured: {video_path}")
+        print(f"\n✅ Video captured: {video_path}")
         
-        # Show info
-        info = processor.video_info(video_path)
-        print(f"\nCaptured video info:")
+        # Show info - FIX: Changed to get_video_info()
+        info = processor.get_video_info(video_path)
+        print(f"\n✅ Captured video info:")
         print(f"  Duration: {info['duration_seconds']}s")
         print(f"  Resolution: {info['resolution']}")
         print(f"  File size: {info['file_size_mb']} MB")
@@ -134,17 +128,17 @@ def test_frame_extraction():
         )
         print(f"\n✅ Extracted {len(frames)} frames")
         print(f"   Saved to: {output_folder}")
-        print(f"   Frame shape: {frames[0].shape if frames else 'N/A'}")
+        if frames:
+            print(f"   Frame shape: {frames[0].shape}")
         
         return frames
         
     except Exception as e:
-        print(f"\nFrame extraction failed: {e}")
+        print(f"\n❌ Frame extraction failed: {e}")
         return None
 
 
 def test_save_metadata():
-    """Test 6: Save video metadata to JSON"""
     print("\n" + "="*70)
     print("TEST 6: Save Metadata to JSON")
     print("="*70 + "\n")
@@ -169,26 +163,16 @@ def test_save_metadata():
 
 
 def run_all_tests():
-    """Run complete test suite"""
     print("\n" + "🎬 " + "="*66)
     print("AIRA - Video Utilities Complete Test Suite")
     print("="*70 + "\n")
     
     results = {}
-    
-    # Test 1: Webcam
     results['webcam'] = test_webcam()
-    
-    # Test 2: Find cameras
     results['cameras'] = test_find_cameras()
-    
-    # Test 3: Video info (if exists)
     results['info'] = test_video_info()
-    
-    # Test 4: Capture video (optional - requires camera)
     print("\n" + "="*70)
-    print("⚠️  TEST 4 will capture 5 seconds of video")
-    response = input("Run video capture test? (y/n): ")
+    response = input("This Test will capture 5 seconds of Video.Run video capture test? (y/n): ")
     
     if response.lower() == 'y':
         results['capture'] = test_capture_video()
@@ -204,7 +188,7 @@ def run_all_tests():
     
     # Summary
     print("\n" + "="*70)
-    print("📊 TEST SUMMARY")
+    print("RESULTS")
     print("="*70 + "\n")
     
     passed = sum(1 for v in results.values() if v)
@@ -219,18 +203,18 @@ def run_all_tests():
     print("\n" + "="*70)
     
     if passed == total:
-        print("🎉 ALL TESTS PASSED!")
+        print("ALL TESTS PASSED!")
     elif passed > 0:
-        print("⚠️  SOME TESTS PASSED")
+        print("SOME TESTS PASSED")
     else:
-        print("❌ ALL TESTS FAILED")
+        print("NO TESTS PASSWD")
     
     print("="*70 + "\n")
 
 
 if __name__ == "__main__":
     # Quick menu
-    print("\n🎬 AIRA Video Utils Test Menu\n")
+    print("\nTest Menu\n")
     print("1. Run all tests")
     print("2. Test webcam only")
     print("3. Find available cameras")
@@ -253,7 +237,5 @@ if __name__ == "__main__":
         test_capture_video()
     elif choice == '6':
         test_frame_extraction()
-    elif choice == '7':
-        print("👋 Goodbye!")
     else:
         print("❌ Invalid choice")

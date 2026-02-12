@@ -20,9 +20,11 @@ soundfile
 pydub
 ffmpeg-python
 
-# Computer Vision (for future video analysis)
+# Computer Vision
 opencv-python
 mediapipe
+deepface
+moviepy
 
 # Data Processing
 numpy
@@ -37,10 +39,6 @@ pydantic
 # Visualization
 plotly
 matplotlib
-
-# Frontend
-streamlit
-streamlit-webrtc
 
 # Testing
 pytest

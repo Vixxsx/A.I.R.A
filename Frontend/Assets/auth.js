@@ -1,3 +1,7 @@
+// ========== CONFIGURATION ==========
+const API_BASE_URL = 'http://localhost:8000';  // Change to your backend URL
+
+// ========== ANIMATION HANDLING ==========
 document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const direction = params.get('dir');
@@ -5,75 +9,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (card) {
         if (direction === 'right') {
-            card.classList.add('slide-right');
+            card.classList.add('slide-in-right');
         } else if (direction === 'left') {
-            card.classList.add('slide-left');
+            card.classList.add('slide-in-left');
         } else {
-            // Default "drop down" animation if no direction is specified
-            card.style.animation = "boxSlideDown 0.6s ease forwards"; 
+            card.style.opacity = "1";
+            card.style.transition = "opacity 0.5s ease";
         }
     }
 });
 
-// Wait for DOM to load
+// ========== FORM HANDLERS ==========
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Check which page we're on
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
 
-    // Login Form Handler
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
 
-    // Register Form Handler
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
     }
 });
 
-// Handle Login
-function handleLogin(e) {
+// ========== LOGIN HANDLER ==========
+async function handleLogin(e) {
     e.preventDefault();
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const rememberMe = document.getElementById('rememberMe').checked;
 
-    // Get stored users from memory
-    const users = getUsers();
+    // Disable submit button
+    const submitBtn = e.target.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'LOGGING IN...';
 
-    // Find user
-    const user = users.find(u => u.username === username);
+    try {
+        // Call FastAPI login endpoint
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
 
-    if (!user) {
-        showMessage('User not found. Please check your username or sign up.', 'error');
-        return;
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Success!
+            showMessage(data.message, 'success');
+            
+            // Store session
+            if (rememberMe) {
+                localStorage.setItem('aira_user', username);
+            } else {
+                sessionStorage.setItem('aira_user', username);
+            }
+
+            // Redirect after 1.5 seconds
+            setTimeout(() => {
+                window.location.href = 'Home.html';
+            }, 1500);
+        } else {
+            // Error from backend
+            showMessage(data.detail || 'Login failed', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'LOGIN';
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showMessage('Connection error. Please check if backend is running.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'LOGIN';
     }
-
-    if (user.password !== password) {
-        showMessage('Incorrect password. Please try again.', 'error');
-        return;
-    }
-
-    // Successful login
-    showMessage('Login successful! Redirecting...', 'success');
-    
-    // Store session (in a real app, you'd use secure tokens)
-    if (rememberMe) {
-        storeSession(user.username);
-    }
-
-    // Redirect after 1.5 seconds (you can change this to your dashboard page)
-    setTimeout(() => {
-        // window.location.href = 'dashboard.html';
-        alert('Login successful! (Redirect to dashboard here)');
-    }, 1500);
 }
 
-// Handle Registration
-function handleRegister(e) {
+// ========== REGISTER HANDLER ==========
+async function handleRegister(e) {
     e.preventDefault();
     
     const username = document.getElementById('reg-username').value;
@@ -81,34 +99,25 @@ function handleRegister(e) {
     const phone = document.getElementById('phone').value;
     const dob = document.getElementById('dob').value;
     const password = document.getElementById('reg-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
+    const termsAccepted = document.getElementById('terms').checked;
 
-    // Validation
-    if (password !== confirmPassword) {
-        showMessage('Passwords do not match!', 'error');
+    // Frontend validation
+    if (!termsAccepted) {
+        showMessage('You must agree to Terms & Conditions', 'error');
         return;
     }
 
-    // Check if username already exists
-    const users = getUsers();
-    if (users.find(u => u.username === username)) {
-        showMessage('Username already exists. Please choose another.', 'error');
+    if (password.length < 6) {
+        showMessage('Password must be at least 6 characters', 'error');
         return;
     }
 
-    // Check if email already exists
-    if (users.find(u => u.email === email)) {
-        showMessage('Email already registered. Please use another email.', 'error');
-        return;
-    }
-
-    // Validate phone number (10 digits)
     if (!/^\d{10}$/.test(phone)) {
         showMessage('Please enter a valid 10-digit phone number.', 'error');
         return;
     }
 
-    // Validate age (must be at least 13 years old)
+    // Validate age (must be at least 13)
     const birthDate = new Date(dob);
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
@@ -117,67 +126,109 @@ function handleRegister(e) {
         return;
     }
 
-    // Create new user
-    const newUser = {
-        username,
-        email,
-        phone,
-        dob,
-        password,
-        createdAt: new Date().toISOString()
-    };
+    // Disable submit button
+    const submitBtn = e.target.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'CREATING ACCOUNT...';
 
-    // Save user
-    users.push(newUser);
-    saveUsers(users);
+    try {
+        // Call FastAPI register endpoint
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                email: email,
+                phone: phone,
+                dob: dob,
+                password: password
+            })
+        });
 
-    showMessage('Registration successful! Redirecting to login...', 'success');
+        const data = await response.json();
 
-    // Redirect to login page after 2 seconds
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 2000);
+        if (response.ok && data.success) {
+            // Success!
+            showMessage(data.message, 'success');
+
+            // Redirect to login page after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'Login.html';
+            }, 2000);
+        } else {
+            // Error from backend
+            showMessage(data.detail || 'Registration failed', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'CREATE ACCOUNT';
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showMessage('Connection error. Please check if backend is running on port 8000.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'CREATE ACCOUNT';
+    }
 }
 
-// Storage Functions (using in-memory storage for demo)
-// In production, you would use a backend database
-
-let usersData = [];
-
-function getUsers() {
-    return usersData;
-}
-
-function saveUsers(users) {
-    usersData = users;
-}
-
-function storeSession(username) {
-    // In production, use secure session management
-    console.log('Session stored for:', username);
-}
-
-// Show Message Helper
+// ========== MESSAGE DISPLAY ==========
 function showMessage(text, type) {
-    const messageDiv = document.getElementById('message');
+    // Check if message div exists
+    let messageDiv = document.getElementById('message');
+    
+    if (!messageDiv) {
+        // Create message div if it doesn't exist
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'message';
+        messageDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 9999;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        document.body.appendChild(messageDiv);
+    }
+
     messageDiv.textContent = text;
-    messageDiv.className = 'message ' + type;
+    
+    // Style based on type
+    if (type === 'success') {
+        messageDiv.style.background = '#10b981';
+        messageDiv.style.color = 'white';
+    } else {
+        messageDiv.style.background = '#ef4444';
+        messageDiv.style.color = 'white';
+    }
+
     messageDiv.style.display = 'block';
 
-    // Hide message after 5 seconds
+    // Hide after 5 seconds
     setTimeout(() => {
         messageDiv.style.display = 'none';
     }, 5000);
 }
 
-// Optional: Add real-time password strength indicator
+// ========== SESSION CHECK (Optional) ==========
+function checkSession() {
+    const user = localStorage.getItem('aira_user') || sessionStorage.getItem('aira_user');
+    return user;
+}
+
+// ========== PASSWORD STRENGTH INDICATOR (Optional) ==========
 document.addEventListener('DOMContentLoaded', function() {
     const regPassword = document.getElementById('reg-password');
     if (regPassword) {
         regPassword.addEventListener('input', function() {
-            // You can add password strength indicator here
             const strength = calculatePasswordStrength(this.value);
-            // Display strength feedback to user
+            // You can add visual feedback here
+            console.log('Password strength:', strength);
         });
     }
 });
@@ -191,22 +242,21 @@ function calculatePasswordStrength(password) {
     return strength;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const direction = params.get('dir');
-    const card = document.querySelector('.auth-card');
-
-    if (card) {
-        if (direction === 'right') {
-            // Sliding right into Register
-            card.classList.add('slide-in-right');
-        } else if (direction === 'left') {
-            // Sliding left into Login
-            card.classList.add('slide-in-left');
-        } else {
-            // Default "fade-in" if no direction (e.g., first landing)
-            card.style.opacity = "1";
-            card.style.transition = "opacity 0.5s ease";
-        }
+// ========== UTILITY: Test Backend Connection ==========
+async function testBackendConnection() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/test`);
+        const data = await response.json();
+        console.log('✅ Backend connection successful:', data);
+        return true;
+    } catch (error) {
+        console.error('❌ Backend connection failed:', error);
+        console.log('Make sure FastAPI is running on http://localhost:8000');
+        return false;
     }
+}
+
+// Auto-test connection on page load (for debugging)
+document.addEventListener('DOMContentLoaded', () => {
+    testBackendConnection();
 });

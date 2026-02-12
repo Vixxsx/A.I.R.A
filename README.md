@@ -1,0 +1,77 @@
+
+```
+Automated Interview Feedback Analyzer
+├─ .dist
+├─ Backend
+│  ├─ api
+│  │  ├─ Auth_routes.py
+│  │  ├─ routes.py
+│  │  ├─ video_routes.py
+│  │  └─ __init__.py
+│  ├─ Configuration
+│  │  └─ dummy1.txt
+│  ├─ data
+│  │  ├─ Audio
+│  │  ├─ Report
+│  │  └─ Video
+│  │     ├─ Frames
+│  │     ├─ Processed
+│  │     └─ Raw
+│  │        └─ test_video.mp4
+│  ├─ dummy.py
+│  ├─ Models
+│  │  ├─ filler_word_detection.py
+│  │  ├─ Question_Generator.py
+│  │  ├─ whisper_stt.py
+│  │  └─ __init__.py
+│  ├─ Tests
+│  │  ├─ convert.py
+│  │  ├─ dummy.html
+│  │  ├─ Questions.py
+│  │  ├─ test_video_api.py
+│  │  ├─ video_test.py
+│  │  └─ __init__.py
+│  └─ Utilities
+│     ├─ video_utils.py
+│     └─ __init__.py
+├─ Data
+│  ├─ Assets
+│  │  ├─ A.mp3
+│  │  ├─ B.mp3
+│  │  ├─ C.mp3
+│  │  ├─ D.mp3
+│  │  ├─ F.mp3
+│  │  └─ S.mp3
+│  ├─ Audio
+│  │  └─ test_audio.wav
+│  ├─ Questions
+│  ├─ Report
+│  ├─ Transcript
+│  │  ├─ transcript_20260129_000656.json
+│  │  ├─ transcript_20260207_095716.json
+│  │  └─ transcript_20260207_102320.json
+│  ├─ users.csv
+│  └─ Video
+│     ├─ Frames
+│     │  └─ test_extraction
+│     ├─ Processed
+│     ├─ Raw
+│     └─ readme.md
+├─ Docs
+├─ Frontend
+│  ├─ Assets
+│  │  └─ auth.js
+│  ├─ Components
+│  │  └─ style.css
+│  └─ Pages
+│     ├─ Dashboard.html
+│     ├─ Login.html
+│     ├─ Register.html
+│     └─ start.html
+├─ humpi.py
+├─ main.py
+├─ require.txt
+├─ temp_audio
+└─ users.db
+
+```

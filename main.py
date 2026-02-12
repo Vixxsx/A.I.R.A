@@ -5,11 +5,16 @@ from pydantic import BaseModel
 import os
 import shutil
 from datetime import datetime
+
+# Import routes
 from Backend.api.video_routes import router as video_router
+from Backend.api.interview_routes import router as interview_router  # ← NEW LINE 1
 
-
+# Import models
 from Backend.Models.whisper_stt import WhisperSTT
 from Backend.Models.filler_word_detection import FillerDetector
+
+# ========== CREATE FASTAPI APP ==========
 
 app = FastAPI(
     title="AIRA - AI Interview Analyzer",
@@ -17,13 +22,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# ========== CORS MIDDLEWARE ==========
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, specify exact origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ========== LOAD AI MODELS ==========
 
 print("🎤 Loading Whisper model...")
 stt = WhisperSTT(model_size="base")
@@ -33,7 +42,8 @@ print("🔍 Loading Filler Detector...")
 filler_detector = FillerDetector(strictness="medium")
 print("✅ Filler Detector loaded!")
 
-# Create required directories
+# ========== CREATE DIRECTORIES ==========
+
 UPLOAD_DIR = "temp_audio"
 TRANSCRIPT_DIR = "Data/Transcript"
 AUDIO_TEST_DIR = "Data/Audio"
@@ -41,7 +51,33 @@ AUDIO_TEST_DIR = "Data/Audio"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(TRANSCRIPT_DIR, exist_ok=True)
 os.makedirs(AUDIO_TEST_DIR, exist_ok=True)
+
+# ========== INCLUDE ROUTERS ==========
+
+# Video routes
 app.include_router(video_router)
+
+# Interview routes
+app.include_router(interview_router)  # ← NEW LINE 2
+print("✅ Interview routes loaded")  # ← NEW LINE 3
+
+# Auth routes - IMPORT AND INCLUDE
+try:
+    # Try to import auth routes from Backend/api/
+    from Backend.api.Auth_routes import router as auth_router
+    app.include_router(auth_router)
+    print("✅ Auth routes loaded from Backend/api/")
+except ImportError:
+    # If not found, try current directory (for development)
+    try:
+        import sys
+        sys.path.append(os.path.dirname(__file__))
+        from Backend.api.Auth_routes import router as auth_router
+        app.include_router(auth_router)
+        print("✅ Auth routes loaded (development mode)")
+    except ImportError:
+        print("⚠️  Auth routes not found - authentication endpoints not available")
+
 
 # ========== RESPONSE MODELS ==========
 
@@ -68,7 +104,6 @@ class FillerAnalysisResponse(BaseModel):
 # ========== HELPER FUNCTIONS ==========
 
 def get_speaking_rate_feedback(wpm: float) -> str:
-    """Generate feedback for speaking rate"""
     if wpm < 110:
         return "Speaking too slowly. Try to increase pace slightly."
     elif 110 <= wpm < 130:
@@ -82,13 +117,6 @@ def get_speaking_rate_feedback(wpm: float) -> str:
 
 
 def calculate_overall_audio_score(filler_score: int, speaking_rate_score: int) -> int:
-    """
-    Calculate overall audio quality score
-    
-    Weighted average:
-    - Filler words: 60% (more important)
-    - Speaking rate: 40%
-    """
     overall = (filler_score * 0.6) + (speaking_rate_score * 0.4)
     return round(overall)
 
@@ -101,7 +129,13 @@ async def root():
         "message": "Welcome to AIRA - AI Interview Analyzer Backend!",
         "status": "running",
         "version": "1.0.0",
-        "docs": "Visit /docs for API documentation"
+        "docs": "Visit /docs for API documentation",
+        "features": {
+            "authentication": "✅ Enabled",
+            "audio_analysis": "✅ Enabled",
+            "video_processing": "✅ Enabled",
+            "interview_analysis": "✅ Enabled"  # ← Updated
+        }
     }
 
 @app.get("/api/test")
@@ -132,22 +166,28 @@ def status():
             "health": "/health",
             "status": "/status",
             "test": "/api/test",
-            "transcribe": "/api/transcribe",
-            "analyze_fillers": "/api/analyze/fillers",
-            "complete_analysis": "/api/analyze/complete"
+            "auth": {
+                "register": "/api/auth/register",
+                "login": "/api/auth/login",
+                "test": "/api/auth/test"
+            },
+            "audio": {
+                "transcribe": "/api/transcribe",
+                "analyze_fillers": "/api/analyze/fillers",
+                "complete_analysis": "/api/analyze/complete"
+            },
+            "interview": {  # ← NEW SECTION
+                "analyze_answer": "/api/interview/analyze-answer",
+                "test": "/api/interview/test"
+            }
         }
     }
 
 
-# ========== API ENDPOINTS ==========
+# ========== AUDIO ANALYSIS ENDPOINTS ==========
 
 @app.post("/api/transcribe", response_model=TranscriptResponse)
 async def transcribe_audio(audio: UploadFile = File(...)):
-    """
-    Transcribe audio file to text using Whisper
-    
-    Returns complete transcription with statistics
-    """
     try:
         # Save uploaded file temporarily
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -193,9 +233,6 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
 @app.post("/api/analyze/fillers", response_model=FillerAnalysisResponse)
 async def analyze_fillers(text: str):
-    """
-    Analyze text for filler words
-    """
     try:
         print("🔍 Analyzing fillers...")
         result = filler_detector.detect_fillers(text)
@@ -216,21 +253,6 @@ async def analyze_fillers(text: str):
 
 @app.post("/api/analyze/complete")
 async def analyze_complete(audio: UploadFile = File(...)):
-    """
-    ✅ PATCH 1: Complete audio analysis
-    
-    Combines:
-    - Whisper transcription
-    - Filler word detection
-    - Audio metrics (WPM, pauses)
-    - Overall scoring
-    
-    Args:
-        audio: Audio file
-    
-    Returns:
-        Complete integrated analysis
-    """
     try:
         # Save uploaded file temporarily
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -316,12 +338,6 @@ async def analyze_complete(audio: UploadFile = File(...)):
     except Exception as e:
         print(f"❌ Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Complete analysis failed: {str(e)}")
-    
-
-
-
-# ========== RUN SERVER ==========
-
 if __name__ == "__main__":
     import uvicorn
     print("\n🚀 Starting AIRA Backend Server...")
