@@ -22,27 +22,26 @@ class VideoProcessor():
         try:
             cap = cv2.VideoCapture(camera_index)
             if not cap.isOpened():
-                print(f"❌ Camera {camera_index} not accessible")
+                print(f"Camera {camera_index} not accessible")
                 return False
             
             ret, frame = cap.read()
             cap.release()
             
             if ret and frame is not None:
-                print(f"✅ Camera {camera_index} working!")
+                print(f"Camera {camera_index} working!")
                 print(f"   Resolution: {frame.shape[1]}x{frame.shape[0]}")
                 return True
             else:
-                print(f"❌ Could not read from camera {camera_index}")
+                print(f"Could not read from camera {camera_index}")
                 return False
                 
         except Exception as e:
-            print(f"❌ Camera test failed: {e}")
+            print(f"Camera test failed: {e}")
             return False
     
     
     def get_available_cameras(self) -> List[int]:
-        """Find all available cameras (0-4)"""
         available = []
         for i in range(5):
             cap = cv2.VideoCapture(i)
@@ -51,7 +50,7 @@ class VideoProcessor():
                 if ret:
                     available.append(i)
                 cap.release()
-        print(f"✅ Available cameras: {available}")
+        print(f"Available cameras: {available}")
         return available
     
     
@@ -62,18 +61,6 @@ class VideoProcessor():
         filename: Optional[str] = None,
         fps: int = 30
     ) -> str:
-        """
-        Capture video from camera
-        
-        Args:
-            duration: Recording duration in seconds
-            camera_index: Camera index (0 = default, 1 = DroidCam)
-            filename: Output filename (auto-generated if None)
-            fps: Frames per second
-        
-        Returns:
-            Path to saved video file
-        """
         if filename is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"video_{timestamp}.mp4"
@@ -115,29 +102,20 @@ class VideoProcessor():
                         elapsed = frame_count // fps
                         print(f"   ⏱️  Recorded {elapsed} seconds")
                 else:
-                    print("❌ Frame read failed")
+                    print("Frame read failed")
                     break
         
         finally:
             cap.release()
             out.release()
         
-        print(f"✅ Video saved to: {output_path}")
+        print(f"Video saved to: {output_path}")
         return output_path
     
     
     def get_video_info(self, video_path: str) -> Dict[str, any]:
-        """
-        Get video metadata
-        
-        Args:
-            video_path: Path to video file
-        
-        Returns:
-            Dictionary with video information
-        """
         if not os.path.exists(video_path):
-            raise FileNotFoundError(f"❌ Video file not found: {video_path}")
+            raise FileNotFoundError(f"Video file not found: {video_path}")
         
         # FIX: Use video_path instead of undefined 'i'
         cap = cv2.VideoCapture(video_path)
@@ -184,19 +162,7 @@ class VideoProcessor():
         max_frames: Optional[int] = None,
         return_arrays: bool = True
     ) -> List[np.ndarray]:
-        """
-        Extract frames from video
-        
-        Args:
-            video_path: Path to video file
-            output_folder: Where to save frames (optional)
-            every_nth: Extract every Nth frame
-            max_frames: Maximum frames to extract
-            return_arrays: Return frame arrays in memory
-        
-        Returns:
-            List of frame arrays (if return_arrays=True)
-        """
+
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"❌ Video file not found: {video_path}")
         
@@ -239,15 +205,15 @@ class VideoProcessor():
                     
                     # Stop if max reached
                     if max_frames and extracted_count >= max_frames:
-                        print(f"   ⚠️  Reached max frames limit: {max_frames}")
+                        print(f"Reached max frames limit: {max_frames}")
                         break
                 
                 frame_index += 1
             
-            print(f"✅ Total frames extracted: {extracted_count}")
+            print(f"Total frames extracted: {extracted_count}")
             
             if output_folder:
-                print(f"   Saved to: {output_folder}")
+                print(f"Saved to: {output_folder}")
             
             return frames
         
@@ -305,9 +271,9 @@ class VideoProcessor():
                         frame_path = os.path.join(output_folder, frame_filename)
                         cv2.imwrite(frame_path, frame)
                 else:
-                    print(f"   ⚠️  Could not extract frame at {timestamp}s")
+                    print(f"Could not extract frame at {timestamp}s")
             
-            print(f"✅ Total frames extracted: {len(frames)}")
+            print(f"Total frames extracted: {len(frames)}")
             return frames
         
         finally:
@@ -321,7 +287,7 @@ class VideoProcessor():
         with open(output_json, 'w') as f:
             json.dump(info, f, indent=2)
         
-        print(f"✅ Metadata saved: {output_json}")
+        print(f"Metadata saved: {output_json}")
     
     
     def _format_duration(self, seconds: float) -> str:
@@ -356,12 +322,12 @@ class VideoProcessor():
                     if file_time < cutoff_time:
                         os.remove(filepath)
                         deleted_count += 1
-                        print(f"   🗑️  Deleted: {filename}")
+                        print(f"Deleted: {filename}")
         
         if deleted_count > 0:
-            print(f"✅ Cleaned up {deleted_count} old file(s)")
+            print(f"Cleaned up {deleted_count} old file(s)")
         else:
-            print("✅ No old files to clean up")
+            print("No old files to clean up")
 
 
 # ========== CONVENIENCE FUNCTIONS ==========

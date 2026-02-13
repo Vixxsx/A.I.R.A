@@ -3,6 +3,8 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import shutil
 from datetime import datetime
 
@@ -134,7 +136,7 @@ async def root():
             "authentication": "✅ Enabled",
             "audio_analysis": "✅ Enabled",
             "video_processing": "✅ Enabled",
-            "interview_analysis": "✅ Enabled"  # ← Updated
+            "interview_analysis": "✅ Enabled"
         }
     }
 

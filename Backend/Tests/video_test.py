@@ -81,13 +81,11 @@ def test_capture_video():
         
         video_path = processor.capture_video(
             duration=5,
-            camera_index=1,  # DroidCam
+            camera_index=0,
             filename="test_video.mp4"
         )
         
         print(f"\n✅ Video captured: {video_path}")
-        
-        # Show info - FIX: Changed to get_video_info()
         info = processor.get_video_info(video_path)
         print(f"\n✅ Captured video info:")
         print(f"  Duration: {info['duration_seconds']}s")
@@ -119,7 +117,6 @@ def test_frame_extraction():
     output_folder = "Data/Video/Frames/test_extraction"
     
     try:
-        # Extract frames (every 10th frame)
         frames = processor.extract_frames(
             video_path=test_video,
             output_folder=output_folder,

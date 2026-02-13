@@ -69,8 +69,8 @@ class QuestionGeneratorResponse(BaseModel):
 @router.post("/transcribe", response_model=TranscriptionResponse)
 async def transcribe_audio(audio: UploadFile = File(...)):
     try:
-        # Save uploaded file temporarily
-        temp_dir = "temp_audio"
+        # Save uploaded file temporarilyx
+        temp_dir = "Data/Audio"
         os.makedirs(temp_dir, exist_ok=True)
         temp_path = os.path.join(temp_dir, audio.filename)
         
@@ -118,40 +118,22 @@ async def analyze_fillers(text: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Filler analysis failed: {str(e)}")
-
-
 @router.post("/analyze/complete")
 async def analyze_complete(audio: UploadFile = File(...)):
-    """
-    Complete analysis: Transcription + Filler detection
-    
-    Args:
-        audio: Audio file
-    
-    Returns:
-        Complete analysis result
-    """
     try:
         # Save uploaded file temporarily
-        temp_dir = "temp_audio"
+        temp_dir = "Data/Audio"
         os.makedirs(temp_dir, exist_ok=True)
         temp_path = os.path.join(temp_dir, audio.filename)
         
         with open(temp_path, "wb") as f:
             content = await audio.read()
             f.write(content)
-        
-        # Step 1: Transcribe
         whisper = get_whisper_model()
         transcription = whisper.transcribe(temp_path)
-        
-        # Step 2: Analyze fillers
         detector = get_filler_detector()
         filler_analysis = detector.analyze(transcription["text"])
-        
-        # Clean up
         os.remove(temp_path)
-        
         return {
             "success": True,
             "transcription": {

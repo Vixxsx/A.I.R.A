@@ -1,8 +1,3 @@
-"""
-AIRA - Video API Endpoints Test Script
-Tests FastAPI video processing endpoints
-"""
-
 import requests
 import os
 

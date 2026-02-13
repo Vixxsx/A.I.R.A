@@ -6,7 +6,7 @@ class AudioExtractor:
     def __init__(self, output_dir: str = "Data/Audio"):
         self.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
-        print(f"✅ Audio Extractor initialized (output: {output_dir})")
+        print(f"Audio Extractor initialized (output: {output_dir})")
     
     
     def extract_audio(
@@ -26,15 +26,13 @@ class AudioExtractor:
         
         output_path = os.path.join(self.output_dir, output_filename)
         
-        print(f"🎵 Extracting audio from: {os.path.basename(video_path)}")
+        print(f"Extracting audio from: {os.path.basename(video_path)}")
         
         try:
-            # Try using FFmpeg first (most reliable)
             if self._check_ffmpeg():
                 self._extract_with_ffmpeg(video_path, output_path, format)
             else:
-                # Fallback to OpenCV
-                print("⚠️  FFmpeg not found, using OpenCV fallback...")
+                print("FFmpeg not found, using OpenCV fallback...")
                 self._extract_with_opencv(video_path, output_path)
             
             # Verify file was created
@@ -45,14 +43,14 @@ class AudioExtractor:
             file_size = os.path.getsize(output_path)
             file_size_mb = file_size / (1024 * 1024)
             
-            print(f"✅ Audio extracted: {output_filename}")
+            print(f"Audio extracted: {output_filename}")
             print(f"   Size: {file_size_mb:.2f} MB")
             print(f"   Path: {output_path}")
             
             return output_path
         
         except Exception as e:
-            print(f"❌ Audio extraction failed: {e}")
+            print(f"Audio extraction failed: {e}")
             raise
     
     def _check_ffmpeg(self) -> bool:
@@ -113,10 +111,7 @@ class AudioExtractor:
         
         if not cap.isOpened():
             raise Exception("Cannot open video file")
-        
-        # Note: OpenCV can't extract audio directly
-        # This is a limitation - we'll create a silent audio file as placeholder
-        # User should install FFmpeg for proper audio extraction
+
         
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -177,13 +172,13 @@ class AudioExtractor:
                 if result.returncode != 0:
                     raise Exception(f"FFmpeg error: {result.stderr}")
                 
-                print(f"✅ Audio segment extracted: {output_filename}")
+                print(f"Audio segment extracted: {output_filename}")
                 return output_path
             else:
                 raise Exception("FFmpeg required for segment extraction")
         
         except Exception as e:
-            print(f"❌ Segment extraction failed: {e}")
+            print(f"Segment extraction failed: {e}")
             raise
     
     

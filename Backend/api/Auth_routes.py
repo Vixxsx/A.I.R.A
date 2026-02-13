@@ -8,7 +8,6 @@ from typing import Optional
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
-# CSV file path
 USERS_CSV = "Data/users.csv"
 
 # Ensure Data directory exists
