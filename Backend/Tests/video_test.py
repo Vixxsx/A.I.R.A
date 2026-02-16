@@ -17,11 +17,9 @@ def test_webcam():
     result = processor.test_webcam(camera_index=0)
     
     if result:
-        print("\n✅ Webcam test PASSED")
+        print("\nWebcam test PASSED")
     else:
-        print("\n❌ Webcam test FAILED")
-        print("Make sure your camera is connected and not used by another app")
-    
+        print("\nWebcam test FAILED")  
     return result
 
 
@@ -34,9 +32,9 @@ def test_find_cameras():
     cameras = processor.get_available_cameras()
     
     if cameras:
-        print(f"\n✅ Found {len(cameras)} camera(s): {cameras}")
+        print(f"\nFound {len(cameras)} camera(s): {cameras}")
     else:
-        print("\n❌ No cameras found")
+        print("\nNo cameras found")
     
     return cameras
 def test_video_info():
@@ -85,9 +83,9 @@ def test_capture_video():
             filename="test_video.mp4"
         )
         
-        print(f"\n✅ Video captured: {video_path}")
+        print(f"\nVideo captured: {video_path}")
         info = processor.get_video_info(video_path)
-        print(f"\n✅ Captured video info:")
+        print(f"\nCaptured video info:")
         print(f"  Duration: {info['duration_seconds']}s")
         print(f"  Resolution: {info['resolution']}")
         print(f"  File size: {info['file_size_mb']} MB")
@@ -95,7 +93,7 @@ def test_capture_video():
         return video_path
         
     except Exception as e:
-        print(f"\n❌ Capture failed: {e}")
+        print(f"\nCapture failed: {e}")
         return None
 
 
@@ -109,11 +107,9 @@ def test_frame_extraction():
     test_video = "Data/Video/Raw/test_video.mp4"
     
     if not os.path.exists(test_video):
-        print(f"⚠️  No test video found: {test_video}")
+        print(f"No test video found: {test_video}")
         print("   Run test_capture_video() first")
         return None
-    
-    # Create output folder
     output_folder = "Data/Video/Frames/test_extraction"
     
     try:
@@ -131,7 +127,7 @@ def test_frame_extraction():
         return frames
         
     except Exception as e:
-        print(f"\n❌ Frame extraction failed: {e}")
+        print(f"\nFrame extraction failed: {e}")
         return None
 
 
@@ -151,16 +147,16 @@ def test_save_metadata():
         output_json = "Data/Video/Raw/test_video_info.json"
         processor.save_frame_metadata(test_video, output_json)
         
-        print(f"\n✅ Metadata saved to: {output_json}")
+        print(f"\nMetadata saved to: {output_json}")
         return output_json
         
     except Exception as e:
-        print(f"\n❌ Failed to save metadata: {e}")
+        print(f"\nFailed to save metadata: {e}")
         return None
 
 
 def run_all_tests():
-    print("\n" + "🎬 " + "="*66)
+    print("\n"+ "="*55)
     print("AIRA - Video Utilities Complete Test Suite")
     print("="*70 + "\n")
     
@@ -177,7 +173,6 @@ def run_all_tests():
         if results['capture']:
             # Test 5: Extract frames
             results['extraction'] = test_frame_extraction()
-            
             # Test 6: Save metadata
             results['metadata'] = test_save_metadata()
     else:
@@ -194,7 +189,7 @@ def run_all_tests():
     print(f"Tests passed: {passed}/{total}")
     
     for test, result in results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "PASS" if result else "FAIL"
         print(f"  {test}: {status}")
     
     print("\n" + "="*70)
@@ -235,4 +230,4 @@ if __name__ == "__main__":
     elif choice == '6':
         test_frame_extraction()
     else:
-        print("❌ Invalid choice")
+        print("Invalid choice")

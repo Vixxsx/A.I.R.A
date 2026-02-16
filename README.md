@@ -1,25 +1,15 @@
-
-```
-Automated Interview Feedback Analyzer
-├─ .dist
 ├─ Backend
 │  ├─ api
 │  │  ├─ Auth_routes.py
+│  │  ├─ interview_routes.py
 │  │  ├─ routes.py
 │  │  ├─ video_routes.py
 │  │  └─ __init__.py
 │  ├─ Configuration
 │  │  └─ dummy1.txt
-│  ├─ data
-│  │  ├─ Audio
-│  │  ├─ Report
-│  │  └─ Video
-│  │     ├─ Frames
-│  │     ├─ Processed
-│  │     └─ Raw
-│  │        └─ test_video.mp4
-│  ├─ dummy.py
 │  ├─ Models
+│  │  ├─ emotion_detector.py
+│  │  ├─ eye_tracker.py
 │  │  ├─ filler_word_detection.py
 │  │  ├─ Question_Generator.py
 │  │  ├─ whisper_stt.py
@@ -32,46 +22,62 @@ Automated Interview Feedback Analyzer
 │  │  ├─ video_test.py
 │  │  └─ __init__.py
 │  └─ Utilities
+│     ├─ audio_extract.py
 │     ├─ video_utils.py
 │     └─ __init__.py
 ├─ Data
 │  ├─ Assets
-│  │  ├─ A.mp3
-│  │  ├─ B.mp3
-│  │  ├─ C.mp3
-│  │  ├─ D.mp3
-│  │  ├─ F.mp3
-│  │  └─ S.mp3
 │  ├─ Audio
 │  │  └─ test_audio.wav
 │  ├─ Questions
 │  ├─ Report
 │  ├─ Transcript
-│  │  ├─ transcript_20260129_000656.json
-│  │  ├─ transcript_20260207_095716.json
-│  │  └─ transcript_20260207_102320.json
 │  ├─ users.csv
 │  └─ Video
 │     ├─ Frames
 │     │  └─ test_extraction
+│     │     ├─ frame_000000.jpg
+│     │     ├─ frame_000010.jpg
+│     │     ├─ frame_000020.jpg
+│     │     ├─ frame_000030.jpg
+│     │     ├─ frame_000040.jpg
+│     │     ├─ frame_000050.jpg
+│     │     ├─ frame_000060.jpg
+│     │     ├─ frame_000070.jpg
+│     │     ├─ frame_000080.jpg
+│     │     ├─ frame_000090.jpg
+│     │     ├─ frame_000100.jpg
+│     │     ├─ frame_000110.jpg
+│     │     ├─ frame_000120.jpg
+│     │     ├─ frame_000130.jpg
+│     │     └─ frame_000140.jpg
 │     ├─ Processed
 │     ├─ Raw
+│     │  ├─ test_video.mp4
+│     │  └─ test_video_info.json
 │     └─ readme.md
 ├─ Docs
+├─ Emergency.md
 ├─ Frontend
 │  ├─ Assets
 │  │  └─ auth.js
 │  ├─ Components
 │  │  └─ style.css
 │  └─ Pages
+│     ├─ A.mp3
+│     ├─ B.mp3
+│     ├─ C.mp3
+│     ├─ D.mp3
 │     ├─ Dashboard.html
+│     ├─ F.mp3
 │     ├─ Login.html
 │     ├─ Register.html
+│     ├─ S.mp3
+│     ├─ scorecard.html
 │     └─ start.html
-├─ humpi.py
 ├─ main.py
-├─ require.txt
-├─ temp_audio
+├─ README.md
+├─ requirements.txt
 └─ users.db
 
 ```

@@ -8,10 +8,11 @@ from typing import Optional
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
-USERS_CSV = "Data/users.csv"
+USERS_CSV = "Data/Assets/users.csv"
 
 # Ensure Data directory exists
 os.makedirs("Data", exist_ok=True)
+os.makedirs("Data/Assets", exist_ok=True)
 
 # Initialize CSV if it doesn't exist
 if not os.path.exists(USERS_CSV):

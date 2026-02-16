@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grade Reveal - AIRA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .grade-display {
+            width: 400px;
+            height: 400px;
+            margin: 0 auto 50px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grade-letter {
+            font-size: 250px;
+            font-weight: 900;
+            text-shadow: 
+                0 0 30px rgba(255,255,255,0.8),
+                0 0 60px rgba(255,255,255,0.6);
+            opacity: 0;
+            position: absolute;
+            transform: scale(0);
+        }
+
+        .grade-letter.show {
+            animation: gradePopIn 0.3s ease forwards;
+        }
+
+        .grade-letter.final {
+            animation: finalGradeReveal 0.6s ease forwards;
+        }
+
+        @keyframes gradePopIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes finalGradeReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-10deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.5) rotate(5deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1.3) rotate(0deg);
+            }
+        }
+
+        .grade-F { color: #ef4444; }
+        .grade-D { color: #f97316; }
+        .grade-C { color: #f59e0b; }
+        .grade-B { color: #3b82f6; }
+        .grade-A { color: #8b5cf6; }
+        .grade-S { 
+            color: #fbbf24;
+            text-shadow: 
+                0 0 40px rgba(251, 191, 36, 1),
+                0 0 80px rgba(251, 191, 36, 0.8);
+        }
+
+        .grade-letter.final.grade-S,
+        .grade-letter.final.grade-A {
+            animation: legendaryReveal 0.8s ease forwards;
+        }
+
+        @keyframes legendaryReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+                filter: brightness(1);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(0.8);
+                filter: brightness(3);
+            }
+            60% {
+                transform: scale(1.8);
+                filter: brightness(2);
+            }
+            100% {
+                transform: scale(1.3);
+                filter: brightness(1.5);
+            }
+        }
+
+        .reveal-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 4px solid white;
+            padding: 20px 60px;
+            font-size: 28px;
+            font-weight: 900;
+            border-radius: 50px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .reveal-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .reveal-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .grade-btn {
+            padding: 12px 24px;
+            font-size: 20px;
+            font-weight: 900;
+            border-radius: 10px;
+            border: 3px solid white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .grade-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+        }
+
+        .grade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .grade-btn-F { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .grade-btn-D { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .grade-btn-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .grade-btn-B { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .grade-btn-A { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .grade-btn-S { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+
+        .result-text {
+            font-size: 32px;
+            color: white;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin-top: 30px;
+            opacity: 0;
+        }
+
+        .result-text.show {
+            animation: fadeIn 0.5s ease 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .flash.active {
+            animation: flashEffect 0.3s ease;
+        }
+
+        @keyframes flashEffect {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.8; }
+        }
+
+        .particle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 1s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="grade-display" id="gradeDisplay"></div>
+
+        <button class="reveal-btn" id="revealBtn" onclick="startReveal()">
+            RANDOMIZE GRADE
+        </button>
+
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
+            <button class="grade-btn grade-btn-F" onclick="startReveal('F')">F</button>
+            <button class="grade-btn grade-btn-D" onclick="startReveal('D')">D</button>
+            <button class="grade-btn grade-btn-C" onclick="startReveal('C')">C</button>
+            <button class="grade-btn grade-btn-B" onclick="startReveal('B')">B</button>
+            <button class="grade-btn grade-btn-A" onclick="startReveal('A')">A</button>
+            <button class="grade-btn grade-btn-S" onclick="startReveal('S')">S</button>
+        </div>
+
+        <div class="result-text" id="resultText"></div>
+    </div>
+
+    <div class="flash" id="flash"></div>
+
+    <script>
+        const grades = ['F', 'D', 'C', 'B', 'A', 'S'];
+        
+        // ✅ SIMPLE PATHS - Audio in same folder as HTML!
+        const audioFiles = {
+            'F': 'F.mp3',
+            'D': 'D.mp3',
+            'C': 'C.mp3',
+            'B': 'B.mp3',
+            'A': 'A.mp3',
+            'S': 'S.mp3'
+        };
+
+        let isAnimating = false;
+
+        const audioCache = {};
+        grades.forEach(grade => {
+            audioCache[grade] = new Audio(audioFiles[grade]);
+            audioCache[grade].preload = 'auto';
+        });
+
+        function playSound(grade) {
+            const audio = audioCache[grade];
+            audio.currentTime = 0;
+            audio.play().catch(err => console.log('Audio play failed:', err));
+        }
+
+        function createParticles(count = 30) {
+            const display = document.getElementById('gradeDisplay');
+            const rect = display.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const angle = (Math.PI * 2 * i) / count;
+                const velocity = 150 + Math.random() * 100;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                
+                display.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        function getResultMessage(grade) {
+            const messages = {
+                'S': '🌟 LEGENDARY! PERFECT INTERVIEW! 🌟',
+                'A': '⭐ EXCELLENT! OUTSTANDING! ⭐',
+                'B': '✨ GREAT! WELL DONE! ✨',
+                'C': '👍 GOOD! KEEP IMPROVING! 👍',
+                'D': '📈 NEEDS WORK! TRY AGAIN! 📈',
+                'F': '💪 KEEP PRACTICING! 💪'
+            };
+            return messages[grade];
+        }
+
+        function getWeightedRandomGrade() {
+            const random = Math.random() * 100;
+            if (random < 5) return 'S';
+            if (random < 20) return 'A';
+            if (random < 45) return 'B';
+            if (random < 70) return 'C';
+            if (random < 90) return 'D';
+            return 'F';
+        }
+
+        async function startReveal(manualGrade = null) {
+            if (isAnimating) return;
+            
+            isAnimating = true;
+            document.getElementById('revealBtn').disabled = true;
+            
+            // Disable all grade buttons
+            document.querySelectorAll('.grade-btn').forEach(btn => btn.disabled = true);
+            
+            document.getElementById('resultText').classList.remove('show');
+            document.getElementById('gradeDisplay').innerHTML = '';
+
+            // Use manual grade if provided, otherwise randomize
+            const finalGrade = manualGrade || getWeightedRandomGrade();
+            const finalIndex = grades.indexOf(finalGrade);
+
+            for (let i = 0; i <= finalIndex; i++) {
+                const grade = grades[i];
+                const isLast = (i === finalIndex);
+
+                const gradeEl = document.createElement('div');
+                gradeEl.className = `grade-letter grade-${grade} ${isLast ? 'final' : 'show'}`;
+                gradeEl.textContent = grade;
+
+                document.getElementById('gradeDisplay').innerHTML = '';
+                document.getElementById('gradeDisplay').appendChild(gradeEl);
+
+                playSound(grade);
+
+                if (isLast) {
+                    document.getElementById('flash').classList.add('active');
+                    setTimeout(() => {
+                        document.getElementById('flash').classList.remove('active');
+                    }, 300);
+
+                    if (grade === 'S' || grade === 'A') {
+                        setTimeout(() => createParticles(grade === 'S' ? 40 : 30), 200);
+                    }
+                }
+
+                const delay = isLast ? 0 : 500;  // Increased delay for dramatic effect
+                await sleep(delay);
+            }
+
+            setTimeout(() => {
+                document.getElementById('resultText').textContent = getResultMessage(finalGrade);
+                document.getElementById('resultText').classList.add('show');
+            }, 20000);
+
+            setTimeout(() => {
+                isAnimating = false;
+                document.getElementById('revealBtn').disabled = false;
+                document.querySelectorAll('.grade-btn').forEach(btn => btn.disabled = false);
+            }, 20000);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isAnimating) {
+                e.preventDefault();
+                startReveal();
+            }
+        });
+    </script>
+</body>
+</html>

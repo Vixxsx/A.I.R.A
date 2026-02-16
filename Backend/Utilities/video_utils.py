@@ -71,7 +71,7 @@ class VideoProcessor():
         cap = cv2.VideoCapture(camera_index)
         
         if not cap.isOpened():
-            raise Exception(f"❌ Camera {camera_index} not accessible")
+            raise Exception(f"Camera {camera_index} not accessible")
         
         # Get camera properties
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -121,7 +121,7 @@ class VideoProcessor():
         cap = cv2.VideoCapture(video_path)
         
         if not cap.isOpened():
-            raise Exception(f"❌ Could not open video file: {video_path}")
+            raise Exception(f"Could not open video file: {video_path}")
         
         try:
             fps = cap.get(cv2.CAP_PROP_FPS)
@@ -164,13 +164,13 @@ class VideoProcessor():
     ) -> List[np.ndarray]:
 
         if not os.path.exists(video_path):
-            raise FileNotFoundError(f"❌ Video file not found: {video_path}")
+            raise FileNotFoundError(f"Video file not found: {video_path}")
         
         # FIX: Use video_path instead of undefined 'i'
         cap = cv2.VideoCapture(video_path)
         
         if not cap.isOpened():
-            raise Exception(f"❌ Could not open video file: {video_path}")
+            raise Exception(f"Could not open video file: {video_path}")
         
         if output_folder:
             os.makedirs(output_folder, exist_ok=True)
@@ -239,13 +239,13 @@ class VideoProcessor():
             List of extracted frames
         """
         if not os.path.exists(video_path):
-            raise FileNotFoundError(f"❌ Video not found: {video_path}")
+            raise FileNotFoundError(f"Video not found: {video_path}")
         
         # FIX: Use video_path instead of undefined 'i'
         cap = cv2.VideoCapture(video_path)
         
         if not cap.isOpened():
-            raise Exception(f"❌ Could not open video: {video_path}")
+            raise Exception(f"Could not open video: {video_path}")
         
         fps = cap.get(cv2.CAP_PROP_FPS)
         
@@ -254,7 +254,7 @@ class VideoProcessor():
         
         frames = []
         
-        print(f"📹 Extracting frames at specified timestamps from: {os.path.basename(video_path)}")
+        print(f"Extracting frames at specified timestamps from: {os.path.basename(video_path)}")
         
         try:
             for i, timestamp in enumerate(timestamps):

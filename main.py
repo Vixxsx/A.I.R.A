@@ -1,16 +1,16 @@
 from py_compile import main
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 import shutil
 from datetime import datetime
 
 # Import routes
 from Backend.api.video_routes import router as video_router
-from Backend.api.interview_routes import router as interview_router  # ← NEW LINE 1
+from Backend.api.interview_routes import router as interview_router
 
 # Import models
 from Backend.Models.whisper_stt import WhisperSTT
@@ -60,17 +60,15 @@ os.makedirs(AUDIO_TEST_DIR, exist_ok=True)
 app.include_router(video_router)
 
 # Interview routes
-app.include_router(interview_router)  # ← NEW LINE 2
-print("✅ Interview routes loaded")  # ← NEW LINE 3
+app.include_router(interview_router)
+print("✅ Interview routes loaded")
 
 # Auth routes - IMPORT AND INCLUDE
 try:
-    # Try to import auth routes from Backend/api/
     from Backend.api.Auth_routes import router as auth_router
     app.include_router(auth_router)
     print("✅ Auth routes loaded from Backend/api/")
 except ImportError:
-    # If not found, try current directory (for development)
     try:
         import sys
         sys.path.append(os.path.dirname(__file__))
@@ -79,6 +77,21 @@ except ImportError:
         print("✅ Auth routes loaded (development mode)")
     except ImportError:
         print("⚠️  Auth routes not found - authentication endpoints not available")
+
+
+# ========== SERVE FRONTEND STATIC FILES ==========
+
+# Mount static files (CSS, JS, images, audio)
+app.mount("/Assets", StaticFiles(directory="Frontend/Assets"), name="assets")
+app.mount("/Components", StaticFiles(directory="Frontend/Components"), name="components")
+
+# Mount pages directory
+app.mount("/Pages", StaticFiles(directory="Frontend/Pages", html=True), name="pages")
+
+print("✅ Frontend static files mounted")
+print("   - Assets: /Assets/*")
+print("   - Components: /Components/*")
+print("   - Pages: /Pages/*")
 
 
 # ========== RESPONSE MODELS ==========
@@ -106,6 +119,7 @@ class FillerAnalysisResponse(BaseModel):
 # ========== HELPER FUNCTIONS ==========
 
 def get_speaking_rate_feedback(wpm: float) -> str:
+    """Generate feedback for speaking rate"""
     if wpm < 110:
         return "Speaking too slowly. Try to increase pace slightly."
     elif 110 <= wpm < 130:
@@ -119,6 +133,13 @@ def get_speaking_rate_feedback(wpm: float) -> str:
 
 
 def calculate_overall_audio_score(filler_score: int, speaking_rate_score: int) -> int:
+    """
+    Calculate overall audio quality score
+    
+    Weighted average:
+    - Filler words: 60% (more important)
+    - Speaking rate: 40%
+    """
     overall = (filler_score * 0.6) + (speaking_rate_score * 0.4)
     return round(overall)
 
@@ -127,6 +148,13 @@ def calculate_overall_audio_score(filler_score: int, speaking_rate_score: int) -
 
 @app.get("/")
 async def root():
+    """Redirect to login page"""
+    return RedirectResponse(url="/Pages/start.html")
+
+
+@app.get("/api")
+async def api_root():
+    """API welcome endpoint"""
     return {
         "message": "Welcome to AIRA - AI Interview Analyzer Backend!",
         "status": "running",
@@ -178,7 +206,7 @@ def status():
                 "analyze_fillers": "/api/analyze/fillers",
                 "complete_analysis": "/api/analyze/complete"
             },
-            "interview": {  # ← NEW SECTION
+            "interview": {
                 "analyze_answer": "/api/interview/analyze-answer",
                 "test": "/api/interview/test"
             }
@@ -235,6 +263,9 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
 @app.post("/api/analyze/fillers", response_model=FillerAnalysisResponse)
 async def analyze_fillers(text: str):
+    """
+    Analyze text for filler words
+    """
     try:
         print("🔍 Analyzing fillers...")
         result = filler_detector.detect_fillers(text)
@@ -255,6 +286,15 @@ async def analyze_fillers(text: str):
 
 @app.post("/api/analyze/complete")
 async def analyze_complete(audio: UploadFile = File(...)):
+    """
+    Complete audio analysis
+    
+    Combines:
+    - Whisper transcription
+    - Filler word detection
+    - Audio metrics (WPM, pauses)
+    - Overall scoring
+    """
     try:
         # Save uploaded file temporarily
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -340,11 +380,18 @@ async def analyze_complete(audio: UploadFile = File(...)):
     except Exception as e:
         print(f"❌ Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Complete analysis failed: {str(e)}")
+
+
+# ========== RUN SERVER ==========
+
 if __name__ == "__main__":
     import uvicorn
     print("\n🚀 Starting AIRA Backend Server...")
-    print("📍 API will be available at: http://localhost:8000")
-    print("📚 Documentation at: http://localhost:8000/docs")
+    print("📍 Server: http://localhost:8000")
+    print("📚 API Docs: http://localhost:8000/docs")
+    print("🌐 Frontend: http://localhost:8000/")
+    print("   - Login: http://localhost:8000/Pages/Login.html")
+    print("   - Dashboard: http://localhost:8000/Pages/Dashboard.html")
     print("\n")
     
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
