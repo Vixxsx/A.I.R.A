@@ -22,7 +22,7 @@ print("="*70 + "\n")
 for i, q in enumerate(questions, 1):
     print(f"QUESTION {i}")
     print(f"\n{q['question']}\n")
-    print(f"Type: {q['type'].upper()}")
+    print(f"Type: {q.get('category', q.get('type', 'N/A')).upper()}")
     print(f"Difficulty: {q['difficulty'].upper()}")
     print(f"\n")
 

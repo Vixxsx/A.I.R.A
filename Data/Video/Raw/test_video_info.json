@@ -1,0 +1,13 @@
+{
+  "path": "Data/Video/Raw/test_video.mp4",
+  "filename": "test_video.mp4",
+  "fps": 30.0,
+  "frame_count": 150,
+  "width": 640,
+  "height": 480,
+  "resolution": "640x480",
+  "duration_seconds": 5.0,
+  "duration_formatted": "0:05",
+  "file_size_bytes": 1148147,
+  "file_size_mb": 1.09
+}

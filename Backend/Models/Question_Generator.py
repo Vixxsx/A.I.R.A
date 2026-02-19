@@ -1,392 +1,320 @@
-import json
 import os
+import json
 from typing import List, Dict, Optional
 from openai import OpenAI
-import random
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+
 class QuestionGenerator:
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        if self.api_key:
-            self.client = OpenAI(api_key=self.api_key)
-        else:
-            self.client = None
-            print("OpenAI API KEY not available.")
-            print("Using Backup question templates.")
+    def __init__(self):
+
+        self.api_key = os.getenv('GROK_API_KEY')
         
-        # Default profile 
-        self.default_profile = {
-            "job_role": "Software Engineer",
-            "degree": "Computer Science",
-            "experience_level": "Entry Level",
-            "company_type": "Tech Startup"
-        }
-        # Default question number
-        self.default_question_count = 5
+        if self.api_key:
+            try:
+                self.client = OpenAI(
+                    api_key=self.api_key,
+                    base_url="https://api.x.ai/v1"
+                )
+                print("✅ Question Generator initialized (Grok API)")
+                self.use_ai = True
+            except Exception as e:
+                print(f"⚠️  Grok API unavailable: {e}")
+                print("   Using template questions instead")
+                self.client = None
+                self.use_ai = False
+        else:
+            print("⚠️  GROK_API_KEY not found in environment")
+            print("   Using template questions")
+            self.client = None
+            self.use_ai = False
+        
+        # Template questions as fallback
+        self.template_questions = self._load_templates()
+    
     
     def generate_questions(
-        self, 
+        self,
         profile: Optional[Dict] = None,
         num_questions: int = 5
     ) -> List[Dict]:
+        """
+        Generate interview questions
+        
+        Args:
+            profile: {
+                'job_role': str,
+                'degree': str,
+                'experience_level': str,
+                'company_type': str
+            }
+            num_questions: Number of questions to generate
+        
+        Returns:
+            List of question dictionaries
+        """
+        # Default profile
         if profile is None:
-            profile = self.default_profile
+            profile = {
+                'job_role': 'Software Engineer',
+                'degree': 'Computer Science',
+                'experience_level': 'Entry Level',
+                'company_type': 'Tech Startup'
+            }
         
-        # Try GPT-4 first
-        if self.client:
+        if self.use_ai and self.client:
             try:
-                questions = self._generate_with_gpt4(profile, num_questions)
-                if questions:
-                    print(f"✅ Generated {len(questions)} questions using GPT-4")
-                    return questions
+                return self._generate_with_grok(profile, num_questions)
             except Exception as e:
-                print(f"GPT-4 generation failed: {e}")
-                print(" Falling back to template questions...")
-        
-        # Fallback to template questions
-        return self._get_fallback_questions(profile, num_questions)
+                print(f"⚠️  Grok generation failed: {e}")
+                print("   Falling back to templates")
+                return self._generate_from_templates(profile, num_questions)
+        else:
+            return self._generate_from_templates(profile, num_questions)
     
-    def _generate_with_gpt4(
-        self, 
-        profile: Dict, 
+    
+    def _generate_with_grok(
+        self,
+        profile: Dict,
         num_questions: int
-    ) -> Optional[List[Dict]]:
-
-        job_role = profile.get("job_role", "Software Engineer")
-        degree = profile.get("degree", "Computer Science")
-        experience = profile.get("experience_level", "Entry Level")
+    ) -> List[Dict]:
+        """Generate questions using Grok API"""
         
-        prompt = f"""You are an expert interviewer. Generate {num_questions} interview questions for a candidate with the following profile:
-
-- Job Role: {job_role}
-- Degree: {degree}
-- Experience Level: {experience}
+        print(f"🤖 Generating {num_questions} questions with Grok...")
+        
+        prompt = f"""Generate {num_questions} interview questions for:
+- Job Role: {profile.get('job_role', 'Software Engineer')}
+- Degree: {profile.get('degree', 'Computer Science')}
+- Experience Level: {profile.get('experience_level', 'Entry Level')}
+- Company Type: {profile.get('company_type', 'Tech Startup')}
 
 Requirements:
-1. Mix of behavioral (2-3) and technical/role-specific (2-3) questions
-2. Progress from easier to harder questions
-3. Questions should be realistic and commonly asked in actual interviews
-4. Each question should be clear and specific
-5. Avoid overly complex or trick questions
+1. Mix of technical, behavioral, and situational questions
+2. Appropriate difficulty for {profile.get('experience_level', 'Entry Level')}
+3. Relevant to {profile.get('job_role', 'Software Engineer')} role
 
-Return ONLY a JSON array in this exact format:
+Return ONLY a JSON array of objects with this structure:
 [
   {{
     "id": 1,
-    "question": "Tell me about yourself and your background.",
-    "type": "behavioral",
-    "difficulty": "easy"
-  }},
-  ...
+    "question": "question text here",
+    "category": "technical/behavioral/situational",
+    "difficulty": "easy/medium/hard",
+    "time_limit": 120
+  }}
 ]
 
-Important: Return ONLY the JSON array, no other text or explanation."""
+Do not include any markdown formatting or code blocks. Return only the raw JSON array."""
 
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="Grok-2-1212",
                 messages=[
                     {
-                        "role": "system", 
-                        "content": "You are an expert interview question generator. Always return valid JSON arrays only."
+                        "role": "system",
+                        "content": "You are an expert technical interviewer. Generate clear, relevant interview questions. Return only valid JSON, no markdown."
                     },
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
                 ],
                 temperature=0.7,
-                max_tokens=1000
+                max_tokens=1500
             )
             
-            # Extract response
             content = response.choices[0].message.content.strip()
             
             # Remove markdown code blocks if present
-            if content.startswith("```json"):
-                content = content[7:]
-            if content.startswith("```"):
-                content = content[3:]
-            if content.endswith("```"):
-                content = content[:-3]
+            if content.startswith('```'):
+                content = content.split('```')[1]
+                if content.startswith('json'):
+                    content = content[4:]
             
             content = content.strip()
+            
+            # Parse JSON
             questions = json.loads(content)
-
-            if isinstance(questions, list) and len(questions) > 0:
-                for i, q in enumerate(questions):
-                    if "question" not in q:
-                        raise ValueError(f"Question {i} missing 'question' field")
-                    if "id" not in q:
-                        q["id"] = i + 1
-                    if "type" not in q:
-                        q["type"] = "general"
-                    if "difficulty" not in q:
-                        q["difficulty"] = "medium"
-                
-                return questions[:num_questions] 
-            return None 
+            
+            print(f"✅ Generated {len(questions)} questions with Grok")
+            return questions
+        
         except json.JSONDecodeError as e:
-            print(f"Failed to parse GPT-4 JSON response: {e}")
-            return None
+            print(f"❌ Failed to parse Grok response: {e}")
+            print(f"   Response: {content[:200]}...")
+            raise
+        
         except Exception as e:
-            print(f"GPT-4 API error: {e}")
-            return None
-    def _get_fallback_questions(
-        self, 
-        profile: Dict, 
+            print(f"❌ Grok API error: {e}")
+            raise
+    
+    
+    def _generate_from_templates(
+        self,
+        profile: Dict,
         num_questions: int
     ) -> List[Dict]:
-
-        job_role = profile.get("job_role", "Software Engineer").lower()
-        templates = self._load_question_templates()
-        role_questions = templates.get(job_role, templates.get("basic", []))
-        shuffled_questions = role_questions.copy()
-        random.shuffle(shuffled_questions)
-        questions = shuffled_questions[:num_questions]
-
-        if len(questions) < num_questions:
-            basic_qs = templates.get("basic", [])
-            remaining = num_questions - len(questions)
-            questions.extend(basic_qs[:remaining])
+        """Generate questions from templates"""
         
-        print(f"Using {len(questions)} fallback questions for: {job_role}")
-        return questions
+        print(f"📝 Generating {num_questions} questions from templates...")
+        
+        job_role = profile.get('job_role', 'Software Engineer')
+        experience = profile.get('experience_level', 'Entry Level')
+        
+        # Get relevant templates
+        all_questions = []
+        
+        if job_role.lower() in ['software engineer', 'developer', 'programmer']:
+            all_questions.extend(self.template_questions['technical'])
+        
+        all_questions.extend(self.template_questions['behavioral'])
+        all_questions.extend(self.template_questions['situational'])
+        
+        # Adjust difficulty based on experience
+        if experience.lower() in ['entry level', 'junior']:
+            all_questions = [q for q in all_questions if q['difficulty'] in ['easy', 'medium']]
+        elif experience.lower() in ['senior', 'lead']:
+            all_questions = [q for q in all_questions if q['difficulty'] in ['medium', 'hard']]
+        
+        # Select questions
+        import random
+        selected = random.sample(
+            all_questions,
+            min(num_questions, len(all_questions))
+        )
+        
+        # Add IDs
+        for i, q in enumerate(selected, 1):
+            q['id'] = i
+        
+        print(f"✅ Selected {len(selected)} template questions")
+        return selected
     
-    def _load_question_templates(self) -> Dict[str, List[Dict]]:
-
-        template_path = "data/question_templates/questions.json"
-
-        if os.path.exists(template_path):
-            try:
-                with open(template_path, 'r') as f:
-                    return json.load(f)
-            except Exception as e:
-                print(f"Error loading templates from file: {e}")
-        
-        # Hardcoded fallback templates
+    
+    def _load_templates(self) -> Dict:
+        """Load template questions"""
         return {
-            "software engineer": [
+            "technical": [
                 {
-                    "id": 1,
-                    "question": "Tell me about yourself and your background in software development.",
-                    "type": "behavioral",
-                    "difficulty": "easy"
+                    "question": "Explain the difference between a stack and a queue. When would you use each?",
+                    "category": "technical",
+                    "difficulty": "easy",
+                    "time_limit": 120
                 },
                 {
-                    "id": 2,
-                    "question": "Describe a challenging project you worked on. What was your role and how did you overcome the challenges?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
+                    "question": "What is object-oriented programming? Explain with examples.",
+                    "category": "technical",
+                    "difficulty": "easy",
+                    "time_limit": 120
                 },
                 {
-                    "id": 3,
-                    "question": "Explain the difference between object-oriented programming and functional programming. When would you use each?",
-                    "type": "technical",
-                    "difficulty": "medium"
+                    "question": "How would you optimize a slow database query?",
+                    "category": "technical",
+                    "difficulty": "medium",
+                    "time_limit": 180
                 },
                 {
-                    "id": 4,
-                    "question": "How do you approach debugging a complex issue in production? Walk me through your process.",
-                    "type": "technical",
-                    "difficulty": "medium"
+                    "question": "Design a URL shortener like bit.ly. What components would you need?",
+                    "category": "technical",
+                    "difficulty": "hard",
+                    "time_limit": 240
                 },
                 {
-                    "id": 5,
-                    "question": "Describe a time when you had to work with a difficult team member. How did you handle the situation?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 6,
-                    "question": "What's your experience with version control systems like Git? Can you explain branching strategies?",
-                    "type": "technical",
-                    "difficulty": "easy"
-                },
-                {
-                    "id": 7,
-                    "question": "How do you stay updated with the latest technologies and programming trends?",
-                    "type": "behavioral",
-                    "difficulty": "easy"
-                },
-                {
-                    "id": 8,
-                    "question": "Explain the concept of RESTful APIs. How would you design one for a user management system?",
-                    "type": "technical",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 9,
-                    "question": "Describe your experience with testing. What's the difference between unit tests, integration tests, and end-to-end tests?",
-                    "type": "technical",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 10,
-                    "question": "Tell me about a time when you had to learn a new technology quickly. How did you approach it?",
-                    "type": "behavioral",
-                    "difficulty": "easy"
+                    "question": "Explain REST APIs and how they differ from GraphQL.",
+                    "category": "technical",
+                    "difficulty": "medium",
+                    "time_limit": 120
                 }
             ],
-            "data analyst": [
+            "behavioral": [
                 {
-                    "id": 1,
-                    "question": "Tell me about yourself and your experience with data analysis.",
-                    "type": "behavioral",
-                    "difficulty": "easy"
+                    "question": "Tell me about a time you faced a challenging deadline. How did you handle it?",
+                    "category": "behavioral",
+                    "difficulty": "easy",
+                    "time_limit": 120
                 },
                 {
-                    "id": 2,
-                    "question": "Describe a time when you used data to solve a business problem. What was your approach?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
+                    "question": "Describe a situation where you had to work with a difficult team member.",
+                    "category": "behavioral",
+                    "difficulty": "medium",
+                    "time_limit": 120
                 },
                 {
-                    "id": 3,
-                    "question": "What tools and programming languages are you proficient in for data analysis?",
-                    "type": "technical",
-                    "difficulty": "easy"
+                    "question": "What's your greatest professional achievement and why?",
+                    "category": "behavioral",
+                    "difficulty": "easy",
+                    "time_limit": 120
                 },
                 {
-                    "id": 4,
-                    "question": "Explain the difference between supervised and unsupervised learning. Give examples.",
-                    "type": "technical",
-                    "difficulty": "medium"
+                    "question": "Tell me about a time you failed. What did you learn?",
+                    "category": "behavioral",
+                    "difficulty": "medium",
+                    "time_limit": 120
                 },
                 {
-                    "id": 5,
-                    "question": "How do you handle missing or inconsistent data in a dataset?",
-                    "type": "technical",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 6,
-                    "question": "Walk me through how you would analyze customer churn data. What metrics would you focus on?",
-                    "type": "technical",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 7,
-                    "question": "Explain what a p-value is and how you would use it in hypothesis testing.",
-                    "type": "technical",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 8,
-                    "question": "Describe a time when your analysis led to a significant business decision or change.",
-                    "type": "behavioral",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 9,
-                    "question": "How do you communicate complex data insights to non-technical stakeholders?",
-                    "type": "behavioral",
-                    "difficulty": "easy"
-                },
-                {
-                    "id": 10,
-                    "question": "What's your experience with SQL? Can you explain the difference between JOIN types?",
-                    "type": "technical",
-                    "difficulty": "easy"
+                    "question": "How do you stay updated with new technologies in your field?",
+                    "category": "behavioral",
+                    "difficulty": "easy",
+                    "time_limit": 90
                 }
             ],
-            "basic": [
+            "situational": [
                 {
-                    "id": 1,
-                    "question": "Tell me about yourself and why you're interested in this position.",
-                    "type": "behavioral",
-                    "difficulty": "easy"
+                    "question": "If you discovered a critical bug in production, what steps would you take?",
+                    "category": "situational",
+                    "difficulty": "medium",
+                    "time_limit": 120
                 },
                 {
-                    "id": 2,
-                    "question": "What are your greatest strengths and how do they relate to this role?",
-                    "type": "behavioral",
-                    "difficulty": "easy"
+                    "question": "Your manager assigns you a task you disagree with. How do you respond?",
+                    "category": "situational",
+                    "difficulty": "medium",
+                    "time_limit": 120
                 },
                 {
-                    "id": 3,
-                    "question": "Describe a challenging situation you faced and how you resolved it.",
-                    "type": "behavioral",
-                    "difficulty": "medium"
+                    "question": "Two team members have conflicting ideas on implementation. How would you mediate?",
+                    "category": "situational",
+                    "difficulty": "hard",
+                    "time_limit": 150
                 },
                 {
-                    "id": 4,
-                    "question": "Where do you see yourself in 5 years?",
-                    "type": "behavioral",
-                    "difficulty": "easy"
-                },
-                {
-                    "id": 5,
-                    "question": "Why should we hire you for this position?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 6,
-                    "question": "What is your greatest weakness and how are you working to improve it?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 7,
-                    "question": "Tell me about a time when you failed. What did you learn from it?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
-                },
-                {
-                    "id": 8,
-                    "question": "How do you prioritize tasks when you have multiple deadlines?",
-                    "type": "behavioral",
-                    "difficulty": "easy"
-                },
-                {
-                    "id": 9,
-                    "question": "Describe a situation where you had to work as part of a team to achieve a goal.",
-                    "type": "behavioral",
-                    "difficulty": "easy"
-                },
-                {
-                    "id": 10,
-                    "question": "Why are you leaving your current job, or why did you leave your last position?",
-                    "type": "behavioral",
-                    "difficulty": "medium"
+                    "question": "You're running behind on a project deadline. What do you do?",
+                    "category": "situational",
+                    "difficulty": "easy",
+                    "time_limit": 90
                 }
             ]
         }
-    
-    def save_questions_to_file(
-        self, 
-        questions: List[Dict], 
-        filename: str = "interview_questions.json"
-    ):
-        """
-        Save generated questions to file
-        
-        Args:
-            questions: List of question dictionaries
-            filename: Output filename
-        """
-        output_dir = "data/Questions"
-        os.makedirs(output_dir, exist_ok=True)
-        
-        filepath = os.path.join(output_dir, filename)
-        
-        with open(filepath, 'w') as f:
-            json.dump(questions, f, indent=2)
-        
-        print(f"✅ Questions saved to: {filepath}")
 
 
-# Example usage
+# ========== CONVENIENCE FUNCTION ==========
+
+def quick_generate(num_questions: int = 5) -> List[Dict]:
+    """Quick question generation"""
+    generator = QuestionGenerator()
+    return generator.generate_questions(num_questions=num_questions)
+
+
+# ========== TEST ==========
+
 if __name__ == "__main__":
-    # Initialize generator
+    print("\n🎯 Testing Question Generator\n")
+    
     generator = QuestionGenerator()
     
-    # Generate questions with default profile
-    print("🎯 Generating interview questions...\n")
-    questions = generator.generate_questions()
+    profile = {
+        "job_role": "Software Engineer",
+        "degree": "Computer Science",
+        "experience_level": "Entry Level",
+        "company_type": "Tech Startup"
+    }
     
-    # Display questions
-    print("\n📋 Generated Questions:\n")
+    questions = generator.generate_questions(profile=profile, num_questions=5)
+    
+    print(f"\n📋 Generated {len(questions)} questions:\n")
     for q in questions:
-        print(f"Q{q['id']}: {q['question']}")
-        print(f"   Type: {q['type']} | Difficulty: {q['difficulty']}\n")
-    
-    # Save to file
-    generator.save_questions_to_file(questions)
+        print(f"{q['id']}. [{q['category'].upper()}] {q['question']}")
+        print(f"   Difficulty: {q['difficulty']} | Time: {q['time_limit']}s\n")

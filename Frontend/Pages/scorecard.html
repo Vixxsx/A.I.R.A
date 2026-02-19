@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade Reveal - AIRA</title>
+    <title>Interview Results - AIRA</title>
     <style>
         * {
             margin: 0;
@@ -12,183 +12,551 @@
         }
 
         body {
-            font-family: 'Impact', 'Arial Black', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-100vh) translateX(50px); }
         }
 
         .container {
-            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
-        .grade-display {
-            width: 400px;
-            height: 400px;
-            margin: 0 auto 50px;
+        /* ========== PAGE 1: PERFORMANCE BREAKDOWN ========== */
+        .performance-page {
+            display: block;
+        }
+
+        .performance-page.hidden {
+            display: none;
+        }
+
+        .scorecard {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 16px;
+        }
+
+        /* 2x2 Grid Layout */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .category-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            border: 3px solid transparent;
+        }
+
+        .category-box.show {
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .category-box.content-box { border-color: #8b5cf6; }
+        .category-box.audio-box { border-color: #10b981; }
+        .category-box.eye-box { border-color: #f59e0b; }
+        .category-box.emotion-box { border-color: #3b82f6; }
+
+        .circle-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .circular-progress {
             position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+        }
+
+        .circular-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: #e5e7eb;
+            stroke-width: 10;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 2s ease;
+        }
+
+        .progress-bar.content { stroke: url(#gradientContent); }
+        .progress-bar.audio { stroke: url(#gradientAudio); }
+        .progress-bar.eye { stroke: url(#gradientEye); }
+        .progress-bar.emotion { stroke: url(#gradientEmotion); }
+
+        .circle-score {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 42px;
+            font-weight: 900;
+            color: #1f2937;
+        }
+
+        .category-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .category-weight {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        /* Expandable details */
+        .category-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .category-details.expanded {
+            max-height: 400px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .detail-label {
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .feedback-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #1e40af;
+            line-height: 1.5;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .calculate-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* ========== PAGE 2: RESULTS PAGE ========== */
+        .results-page {
+            display: none;
+        }
+
+        .results-page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .results-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .grade-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .grade-badge-large {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 120px;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .grade-badge-large.grade-S {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            animation: pulseGold 2s ease infinite;
+        }
+
+        .grade-badge-large.grade-A {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            animation: pulsePurple 2s ease infinite;
+        }
+
+        .grade-badge-large.grade-B {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .grade-badge-large.grade-C {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .grade-badge-large.grade-D {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .grade-badge-large.grade-F {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 20px 50px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 25px 60px rgba(251, 191, 36, 0.8); transform: scale(1.05); }
+        }
+
+        @keyframes pulsePurple {
+            0%, 100% { box-shadow: 0 20px 50px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 25px 60px rgba(139, 92, 246, 0.8); transform: scale(1.05); }
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 900;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .score-message {
+            font-size: 24px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        /* Insights Grid */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .insight-card {
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 250px;
+        }
+
+        .strengths-card {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .weaknesses-card {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        .insight-card h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .insight-list {
+            list-style: none;
+        }
+
+        .insight-list li {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .insight-icon {
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .advice-card {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .advice-card h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .advice-list {
+            list-style: none;
+        }
+
+        .advice-list li {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+            backdrop-filter: blur(10px);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .advice-list li:before {
+            content: "→";
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            padding: 18px 50px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-try-again {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-try-again:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-dashboard {
+            background: white;
+            color: #667eea;
+            border: 3px solid #667eea;
+        }
+
+        .btn-dashboard:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Grade Animation Overlay */
+        .grade-animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .grade-animation-overlay.active {
+            display: flex;
+        }
+
+        .grade-display {
+            width: 300px;
+            height: 300px;
+            position: relative;
         }
 
         .grade-letter {
-            font-size: 250px;
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 200px;
             font-weight: 900;
             text-shadow: 
                 0 0 30px rgba(255,255,255,0.8),
                 0 0 60px rgba(255,255,255,0.6);
             opacity: 0;
             position: absolute;
-            transform: scale(0);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
         }
 
         .grade-letter.show {
-            animation: gradePopIn 0.3s ease forwards;
+            animation: gradePopIn 0.4s ease forwards;
         }
 
         .grade-letter.final {
-            animation: finalGradeReveal 0.6s ease forwards;
+            animation: finalGradeReveal 0.8s ease forwards;
         }
 
         @keyframes gradePopIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.5);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
         @keyframes finalGradeReveal {
-            0% {
-                opacity: 0;
-                transform: scale(0.5) rotate(-10deg);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.5) rotate(5deg);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1.3) rotate(0deg);
-            }
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(-15deg); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.8) rotate(5deg); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.5) rotate(0deg); }
         }
 
-        .grade-F { color: #ef4444; }
-        .grade-D { color: #f97316; }
-        .grade-C { color: #f59e0b; }
-        .grade-B { color: #3b82f6; }
-        .grade-A { color: #8b5cf6; }
+        .grade-F { color: #d43d2a; }
+        .grade-D { color: #ee4d34; }
+        .grade-C { color: #f49829; }
+        .grade-B { color: #6fe27c; }
+        .grade-A { color: #d4ec5f; }
         .grade-S { 
-            color: #fbbf24;
+            color: #f49829;
             text-shadow: 
                 0 0 40px rgba(251, 191, 36, 1),
                 0 0 80px rgba(251, 191, 36, 0.8);
-        }
-
-        .grade-letter.final.grade-S,
-        .grade-letter.final.grade-A {
-            animation: legendaryReveal 0.8s ease forwards;
-        }
-
-        @keyframes legendaryReveal {
-            0% {
-                opacity: 0;
-                transform: scale(0.3);
-                filter: brightness(1);
-            }
-            30% {
-                opacity: 1;
-                transform: scale(0.8);
-                filter: brightness(3);
-            }
-            60% {
-                transform: scale(1.8);
-                filter: brightness(2);
-            }
-            100% {
-                transform: scale(1.3);
-                filter: brightness(1.5);
-            }
-        }
-
-        .reveal-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: 4px solid white;
-            padding: 20px 60px;
-            font-size: 28px;
-            font-weight: 900;
-            border-radius: 50px;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-        }
-
-        .reveal-btn:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-        }
-
-        .reveal-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .grade-btn {
-            padding: 12px 24px;
-            font-size: 20px;
-            font-weight: 900;
-            border-radius: 10px;
-            border: 3px solid white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .grade-btn:hover:not(:disabled) {
-            transform: scale(1.1);
-        }
-
-        .grade-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .grade-btn-F { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .grade-btn-D { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .grade-btn-C { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .grade-btn-B { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .grade-btn-A { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        .grade-btn-S { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-
-        .result-text {
-            font-size: 32px;
-            color: white;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            margin-top: 30px;
-            opacity: 0;
-        }
-
-        .result-text.show {
-            animation: fadeIn 0.5s ease 0.3s forwards;
-        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
         }
 
         .flash {
@@ -200,7 +568,7 @@
             background: white;
             opacity: 0;
             pointer-events: none;
-            z-index: 100;
+            z-index: 1001;
         }
 
         .flash.active {
@@ -212,139 +580,345 @@
             50% { opacity: 0.8; }
         }
 
-        .particle {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: white;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particleFloat 1s ease-out forwards;
-        }
-
-        @keyframes particleFloat {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
             }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
+
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
+    <div class="particles" id="particles"></div>
+
     <div class="container">
-        <div class="grade-display" id="gradeDisplay"></div>
+        <!-- PAGE 1: PERFORMANCE BREAKDOWN -->
+        <div class="performance-page" id="performancePage">
+            <div class="scorecard">
+                <div class="header">
+                    <h1>🎯 Performance Breakdown</h1>
+                    <p>Review your scores across all categories</p>
+                </div>
 
-        <button class="reveal-btn" id="revealBtn" onclick="startReveal()">
-            RANDOMIZE GRADE
-        </button>
+                <div class="categories-grid">
+                    <!-- Top Left: Content -->
+                    <div class="category-box content-box" onclick="toggleDetails(this)">
+                        <div class="circle-icon">💬</div>
+                        <div class="circular-progress">
+                            <svg width="150" height="150">
+                                <defs>
+                                    <linearGradient id="gradientContent" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
+                                <circle class="progress-bar content" cx="75" cy="75" r="65" 
+                                        id="contentCircle" stroke-dasharray="408.4" stroke-dashoffset="408.4"></circle>
+                            </svg>
+                            <div class="circle-score"><span id="contentScore">0</span></div>
+                        </div>
+                        <div class="category-name">Content Relevancy</div>
+                        <div class="category-weight">30% weight</div>
+                        
+                        <div class="category-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Addresses Question</span>
+                                <span class="detail-value" id="contentAddresses">✅</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Examples Given</span>
+                                <span class="detail-value" id="contentExamples">2</span>
+                            </div>
+                            <div class="feedback-box" id="contentFeedback">Loading...</div>
+                        </div>
+                    </div>
 
-        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
-            <button class="grade-btn grade-btn-F" onclick="startReveal('F')">F</button>
-            <button class="grade-btn grade-btn-D" onclick="startReveal('D')">D</button>
-            <button class="grade-btn grade-btn-C" onclick="startReveal('C')">C</button>
-            <button class="grade-btn grade-btn-B" onclick="startReveal('B')">B</button>
-            <button class="grade-btn grade-btn-A" onclick="startReveal('A')">A</button>
-            <button class="grade-btn grade-btn-S" onclick="startReveal('S')">S</button>
+                    <!-- Top Right: Audio -->
+                    <div class="category-box audio-box" onclick="toggleDetails(this)">
+                        <div class="circle-icon">🎤</div>
+                        <div class="circular-progress">
+                            <svg width="150" height="150">
+                                <defs>
+                                    <linearGradient id="gradientAudio" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
+                                <circle class="progress-bar audio" cx="75" cy="75" r="65"
+                                        id="audioCircle" stroke-dasharray="408.4" stroke-dashoffset="408.4"></circle>
+                            </svg>
+                            <div class="circle-score"><span id="audioScore">0</span></div>
+                        </div>
+                        <div class="category-name">Audio Quality</div>
+                        <div class="category-weight">25% weight</div>
+                        
+                        <div class="category-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Filler Words</span>
+                                <span class="detail-value" id="audioFillers">2 (0.5%)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Speaking Rate</span>
+                                <span class="detail-value" id="audioRate">145 WPM</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Clarity</span>
+                                <span class="detail-value" id="audioClarity">Excellent</span>
+                            </div>
+                            <div class="feedback-box" id="audioFeedback">Loading...</div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Left: Eye Contact -->
+                    <div class="category-box eye-box" onclick="toggleDetails(this)">
+                        <div class="circle-icon">👁️</div>
+                        <div class="circular-progress">
+                            <svg width="150" height="150">
+                                <defs>
+                                    <linearGradient id="gradientEye" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
+                                <circle class="progress-bar eye" cx="75" cy="75" r="65"
+                                        id="eyeCircle" stroke-dasharray="408.4" stroke-dashoffset="408.4"></circle>
+                            </svg>
+                            <div class="circle-score"><span id="eyeScore">0</span></div>
+                        </div>
+                        <div class="category-name">Eye Contact</div>
+                        <div class="category-weight">25% weight</div>
+                        
+                        <div class="category-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Camera Focus</span>
+                                <span class="detail-value" id="eyeFocus">65%</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Engagement</span>
+                                <span class="detail-value" id="eyeEngagement">Moderate</span>
+                            </div>
+                            <div class="feedback-box" id="eyeFeedback">Loading...</div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Right: Body Language -->
+                    <div class="category-box emotion-box" onclick="toggleDetails(this)">
+                        <div class="circle-icon">😊</div>
+                        <div class="circular-progress">
+                            <svg width="150" height="150">
+                                <defs>
+                                    <linearGradient id="gradientEmotion" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
+                                <circle class="progress-bar emotion" cx="75" cy="75" r="65"
+                                        id="emotionCircle" stroke-dasharray="408.4" stroke-dashoffset="408.4"></circle>
+                            </svg>
+                            <div class="circle-score"><span id="emotionScore">0</span></div>
+                        </div>
+                        <div class="category-name">Body Language</div>
+                        <div class="category-weight">20% weight</div>
+                        
+                        <div class="category-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Confidence</span>
+                                <span class="detail-value" id="emotionConfidence">High</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Enthusiasm</span>
+                                <span class="detail-value" id="emotionEnthusiasm">Good</span>
+                            </div>
+                            <div class="feedback-box" id="emotionFeedback">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="calculate-btn" id="calculateBtn" onclick="calculateGrade()">
+                    🎯 Reveal Your Grade
+                </button>
+            </div>
         </div>
 
-        <div class="result-text" id="resultText"></div>
+        <!-- PAGE 2: RESULTS -->
+        <div class="results-page" id="resultsPage">
+            <div class="results-container">
+                <div class="grade-section">
+                    <div class="grade-badge-large" id="gradeBadge">
+                        <span id="gradeLetter">A</span>
+                    </div>
+                    <div class="score-display">
+                        Overall Score: <span id="overallScore">80</span>/100
+                    </div>
+                    <div class="score-message" id="scoreMessage">✨ GREAT! WELL DONE! ✨</div>
+                </div>
+
+                <div class="insights-grid">
+                    <div class="insight-card strengths-card">
+                        <h3>💪 Your Strengths</h3>
+                        <ul class="insight-list" id="strengthsList">
+                            <li><span class="insight-icon">✅</span> Loading...</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-card weaknesses-card">
+                        <h3>📈 Areas for Improvement</h3>
+                        <ul class="insight-list" id="weaknessesList">
+                            <li><span class="insight-icon">⚠️</span> Loading...</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="advice-card">
+                    <h3>💡 Personalized Advice</h3>
+                    <ul class="advice-list" id="adviceList">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="actions">
+                <a href="Dashboard.html" class="action-btn btn-dashboard">← Back to Dashboard</a>
+                <a href="start.html" class="action-btn btn-try-again">🔄 Try Again</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grade Animation Overlay -->
+    <div class="grade-animation-overlay" id="gradeOverlay">
+        <div class="grade-display" id="gradeDisplay"></div>
     </div>
 
     <div class="flash" id="flash"></div>
 
     <script>
-        const grades = ['F', 'D', 'C', 'B', 'A', 'S'];
-        
-        // ✅ SIMPLE PATHS - Audio in same folder as HTML!
-        const audioFiles = {
-            'F': 'F.mp3',
-            'D': 'D.mp3',
-            'C': 'C.mp3',
-            'B': 'B.mp3',
-            'A': 'A.mp3',
-            'S': 'S.mp3'
+        const scoreData = {
+            content: { score: 85, addresses: true, examples: 2, feedback: "Good answer with specific examples demonstrating relevant experience." },
+            audio: { score: 92, fillers: 2, filler_density: 0.5, wpm: 145, clarity: "Excellent", feedback: "Excellent speaking pace with minimal filler words." },
+            eye_contact: { score: 65, focus_percent: 65, engagement: "Moderate", feedback: "Try to maintain more consistent eye contact." },
+            emotions: { score: 78, confidence: "High", enthusiasm: "Good", feedback: "Projected confidence throughout the interview." }
         };
 
-        let isAnimating = false;
-
+        const grades = ['F', 'D', 'C', 'B', 'A', 'S'];
         const audioCache = {};
-        grades.forEach(grade => {
-            audioCache[grade] = new Audio(audioFiles[grade]);
-            audioCache[grade].preload = 'auto';
+        grades.forEach(g => {
+            audioCache[g] = new Audio(`${g}.mp3`);
+            audioCache[g].preload = 'auto';
         });
 
-        function playSound(grade) {
-            const audio = audioCache[grade];
-            audio.currentTime = 0;
-            audio.play().catch(err => console.log('Audio play failed:', err));
-        }
-
-        function createParticles(count = 30) {
-            const display = document.getElementById('gradeDisplay');
-            const rect = display.getBoundingClientRect();
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-
-            for (let i = 0; i < count; i++) {
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
                 const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const angle = (Math.PI * 2 * i) / count;
-                const velocity = 150 + Math.random() * 100;
-                const tx = Math.cos(angle) * velocity;
-                const ty = Math.sin(angle) * velocity;
-                
-                particle.style.left = centerX + 'px';
-                particle.style.top = centerY + 'px';
-                particle.style.setProperty('--tx', tx + 'px');
-                particle.style.setProperty('--ty', ty + 'px');
-                
-                display.appendChild(particle);
-                
-                setTimeout(() => particle.remove(), 1000);
+                particle.className = 'particle-dot';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
             }
         }
 
-        function getResultMessage(grade) {
-            const messages = {
-                'S': '🌟 LEGENDARY! PERFECT INTERVIEW! 🌟',
-                'A': '⭐ EXCELLENT! OUTSTANDING! ⭐',
-                'B': '✨ GREAT! WELL DONE! ✨',
-                'C': '👍 GOOD! KEEP IMPROVING! 👍',
-                'D': '📈 NEEDS WORK! TRY AGAIN! 📈',
-                'F': '💪 KEEP PRACTICING! 💪'
-            };
-            return messages[grade];
+        function initializeScorecard() {
+            createParticles();
+            populateCategories();
+            
+            const boxes = document.querySelectorAll('.category-box');
+            boxes.forEach((box, i) => {
+                setTimeout(() => box.classList.add('show'), i * 200);
+            });
+
+            setTimeout(animateCircles, 1000);
         }
 
-        function getWeightedRandomGrade() {
-            const random = Math.random() * 100;
-            if (random < 5) return 'S';
-            if (random < 20) return 'A';
-            if (random < 45) return 'B';
-            if (random < 70) return 'C';
-            if (random < 90) return 'D';
+        function populateCategories() {
+            document.getElementById('contentScore').textContent = scoreData.content.score;
+            document.getElementById('contentAddresses').textContent = scoreData.content.addresses ? '✅ Yes' : '❌ No';
+            document.getElementById('contentExamples').textContent = scoreData.content.examples + ' examples';
+            document.getElementById('contentFeedback').textContent = scoreData.content.feedback;
+
+            document.getElementById('audioScore').textContent = scoreData.audio.score;
+            document.getElementById('audioFillers').textContent = `${scoreData.audio.fillers} (${scoreData.audio.filler_density}%)`;
+            document.getElementById('audioRate').textContent = scoreData.audio.wpm + ' WPM';
+            document.getElementById('audioClarity').textContent = scoreData.audio.clarity;
+            document.getElementById('audioFeedback').textContent = scoreData.audio.feedback;
+
+            document.getElementById('eyeScore').textContent = scoreData.eye_contact.score;
+            document.getElementById('eyeFocus').textContent = scoreData.eye_contact.focus_percent + '%';
+            document.getElementById('eyeEngagement').textContent = scoreData.eye_contact.engagement;
+            document.getElementById('eyeFeedback').textContent = scoreData.eye_contact.feedback;
+
+            document.getElementById('emotionScore').textContent = scoreData.emotions.score;
+            document.getElementById('emotionConfidence').textContent = scoreData.emotions.confidence;
+            document.getElementById('emotionEnthusiasm').textContent = scoreData.emotions.enthusiasm;
+            document.getElementById('emotionFeedback').textContent = scoreData.emotions.feedback;
+        }
+
+        function animateCircles() {
+            const circumference = 2 * Math.PI * 65;
+            [
+                { id: 'contentCircle', score: scoreData.content.score },
+                { id: 'audioCircle', score: scoreData.audio.score },
+                { id: 'eyeCircle', score: scoreData.eye_contact.score },
+                { id: 'emotionCircle', score: scoreData.emotions.score }
+            ].forEach((circle, i) => {
+                setTimeout(() => {
+                    const el = document.getElementById(circle.id);
+                    const offset = circumference - (circle.score / 100) * circumference;
+                    el.style.strokeDashoffset = offset;
+                }, i * 300);
+            });
+        }
+
+        function toggleDetails(element) {
+            const details = element.querySelector('.category-details');
+            details.classList.toggle('expanded');
+        }
+
+        async function calculateGrade() {
+            document.getElementById('calculateBtn').disabled = true;
+            document.getElementById('calculateBtn').textContent = '🎯 Calculating...';
+
+            const overallScore = Math.round(
+                (scoreData.content.score * 0.30) +
+                (scoreData.audio.score * 0.25) +
+                (scoreData.eye_contact.score * 0.25) +
+                (scoreData.emotions.score * 0.20)
+            );
+
+            const grade = scoreToGrade(overallScore);
+
+            document.getElementById('gradeOverlay').classList.add('active');
+            await revealGrade(grade);
+
+            setTimeout(() => {
+                document.getElementById('gradeOverlay').classList.remove('active');
+                showResultsPage(grade, overallScore);
+            }, 500);
+        }
+
+        function scoreToGrade(score) {
+            if (score >= 90) return 'S';
+            if (score >= 80) return 'A';
+            if (score >= 70) return 'B';
+            if (score >= 60) return 'C';
+            if (score >= 50) return 'D';
             return 'F';
         }
 
-        async function startReveal(manualGrade = null) {
-            if (isAnimating) return;
-            
-            isAnimating = true;
-            document.getElementById('revealBtn').disabled = true;
-            
-            // Disable all grade buttons
-            document.querySelectorAll('.grade-btn').forEach(btn => btn.disabled = true);
-            
-            document.getElementById('resultText').classList.remove('show');
-            document.getElementById('gradeDisplay').innerHTML = '';
-
-            // Use manual grade if provided, otherwise randomize
-            const finalGrade = manualGrade || getWeightedRandomGrade();
+        async function revealGrade(finalGrade) {
             const finalIndex = grades.indexOf(finalGrade);
 
             for (let i = 0; i <= finalIndex; i++) {
@@ -362,41 +936,83 @@
 
                 if (isLast) {
                     document.getElementById('flash').classList.add('active');
-                    setTimeout(() => {
-                        document.getElementById('flash').classList.remove('active');
-                    }, 300);
-
-                    if (grade === 'S' || grade === 'A') {
-                        setTimeout(() => createParticles(grade === 'S' ? 40 : 30), 200);
-                    }
+                    setTimeout(() => document.getElementById('flash').classList.remove('active'), 300);
                 }
 
-                const delay = isLast ? 0 : 500;  // Increased delay for dramatic effect
-                await sleep(delay);
+                await sleep(isLast ? 1000 : 500);
+            }
+        }
+
+        function showResultsPage(grade, score) {
+            // Hide performance page
+            document.getElementById('performancePage').classList.add('hidden');
+            
+            // Show results page
+            document.getElementById('gradeLetter').textContent = grade;
+            document.getElementById('overallScore').textContent = score;
+            document.getElementById('gradeBadge').className = `grade-badge-large grade-${grade}`;
+            
+            const messages = {
+                'S': '🌟 LEGENDARY! PERFECT! 🌟',
+                'A': '✨ EXCELLENT! OUTSTANDING! ✨',
+                'B': '💫 GREAT! WELL DONE! 💫',
+                'C': '👍 GOOD! KEEP IMPROVING! 👍',
+                'D': '📈 NEEDS WORK! 📈',
+                'F': '💪 KEEP PRACTICING! 💪'
+            };
+            document.getElementById('scoreMessage').textContent = messages[grade];
+
+            generateInsights(score, grade);
+            
+            document.getElementById('resultsPage').classList.add('active');
+        }
+
+        function generateInsights(score, grade) {
+            const strengths = [];
+            const weaknesses = [];
+            const advice = [];
+
+            if (scoreData.content.score >= 80) strengths.push('Strong content relevancy - answers directly address questions');
+            else if (scoreData.content.score < 60) {
+                weaknesses.push('Content could be more relevant to questions');
+                advice.push('Practice common interview questions with specific examples');
             }
 
-            setTimeout(() => {
-                document.getElementById('resultText').textContent = getResultMessage(finalGrade);
-                document.getElementById('resultText').classList.add('show');
-            }, 20000);
+            if (scoreData.audio.score >= 85) strengths.push('Excellent audio quality with minimal filler words');
+            else if (scoreData.audio.score < 70) {
+                weaknesses.push('Too many filler words detected');
+                advice.push('Practice speaking without "um", "uh", and "like"');
+            }
 
-            setTimeout(() => {
-                isAnimating = false;
-                document.getElementById('revealBtn').disabled = false;
-                document.querySelectorAll('.grade-btn').forEach(btn => btn.disabled = false);
-            }, 20000);
+            if (scoreData.eye_contact.score >= 75) strengths.push('Good eye contact and camera engagement');
+            else if (scoreData.eye_contact.score < 60) {
+                weaknesses.push('Limited eye contact with camera');
+                advice.push('Practice looking directly at the camera');
+            }
+
+            if (scoreData.emotions.confidence === 'High') strengths.push('Projected strong confidence throughout');
+
+            document.getElementById('strengthsList').innerHTML = strengths.length > 0 
+                ? strengths.map(s => `<li><span class="insight-icon">✅</span> ${s}</li>`).join('')
+                : '<li><span class="insight-icon">💪</span> Keep practicing!</li>';
+
+            document.getElementById('weaknessesList').innerHTML = weaknesses.length > 0
+                ? weaknesses.map(w => `<li><span class="insight-icon">📈</span> ${w}</li>`).join('')
+                : '<li><span class="insight-icon">🎉</span> No major weaknesses!</li>';
+
+            document.getElementById('adviceList').innerHTML = advice.map(a => `<li>${a}</li>`).join('');
+        }
+
+        function playSound(grade) {
+            audioCache[grade].currentTime = 0;
+            audioCache[grade].play().catch(e => console.log('Audio failed:', e));
         }
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !isAnimating) {
-                e.preventDefault();
-                startReveal();
-            }
-        });
+        window.addEventListener('DOMContentLoaded', initializeScorecard);
     </script>
 </body>
 </html>
