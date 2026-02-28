@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - AIRA</title>
+    <link rel="stylesheet" href="../Components/theme.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.18), rgba(0,0,0,0.18) 1px,
+                transparent 1px, transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.55;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(1,205,254,0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(1,205,254,0.07) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+        .blob-1 { top: -150px; right: -150px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(240,147,251,0.15) 0%, transparent 65%); }
+        .blob-2 { bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, transparent 65%); }
+        .blob-3 { top: 40%; left: 40%; width: 600px; height: 600px; transform: translate(-50%,-50%); background: radial-gradient(circle, rgba(185,103,255,0.1) 0%, transparent 60%); }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(30,10,60,0.82);
+            backdrop-filter: blur(16px);
+            padding: 16px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid transparent;
+            border-image: linear-gradient(90deg, transparent, rgba(185,103,255,0.6), rgba(255,113,206,0.6), rgba(1,205,254,0.4), transparent) 1;
+        }
+
+        .welcome-section { display: flex; align-items: center; gap: 15px; }
+        .welcome-icon { font-size: 36px; filter: drop-shadow(0 0 12px rgba(255,113,206,0.5)); }
+        .welcome-text h2 { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+        .welcome-text h2 span { background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .welcome-text p { font-size: 13px; color: rgba(255,251,150,0.4); letter-spacing: 0.5px; margin-top: 2px; }
+
+        .about-btn {
+            font-family: var(--font-display);
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 10px 24px;
+            background: transparent;
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(1,205,254,0.2), inset 0 0 10px rgba(1,205,254,0.05);
+            text-decoration: none;
+        }
+        .about-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(1,205,254,0.2); transform: translate(-50%,-50%); transition: width 0.5s, height 0.5s; }
+        .about-btn:hover::before { width: 300px; height: 300px; }
+        .about-btn:hover { color: white; box-shadow: 0 0 25px rgba(1,205,254,0.6), inset 0 0 20px rgba(1,205,254,0.15); }
+
+        .container { max-width: 860px; margin: 50px auto; padding: 0 24px 60px; position: relative; z-index: 10; }
+
+        .setup-card {
+            background: rgba(5,1,13,0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(185,103,255,0.25);
+            border-radius: var(--radius-xl);
+            padding: 50px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 30px rgba(185,103,255,0.1), inset 0 0 30px rgba(185,103,255,0.05);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .setup-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), var(--secondary), var(--primary), transparent); opacity: 0.6; }
+        .setup-card::after { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(185,103,255,0.12) 0%, transparent 70%); pointer-events: none; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .setup-header { text-align: center; margin-bottom: 40px; }
+        .setup-header h1 { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: 0.05em; background: linear-gradient(90deg, var(--accent), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; filter: drop-shadow(0 0 20px rgba(5,255,161,0.3)); }
+        .setup-header p { font-size: 15px; color: rgba(255,251,150,0.45); line-height: 1.7; }
+
+        .interview-form { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px; }
+        .form-group { position: relative; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        .form-group label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; color: rgba(255,251,150,0.65); }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 13px 18px;
+            background: rgba(5,1,13,0.6);
+            border: 2px solid rgba(1,205,254,0.25);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text);
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(1,205,254,0.06);
+        }
+
+        .form-group input::placeholder { color: rgba(255,251,150,0.2); }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(5,1,13,0.85);
+            box-shadow: 0 0 20px rgba(255,113,206,0.35), inset 0 0 12px rgba(255,113,206,0.1);
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            padding-right: 48px;
+            color-scheme: dark;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23FF71CE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        /* Right-side accent glow strip on selects */
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 44px;
+            background: linear-gradient(90deg, transparent, rgba(255,113,206,0.12));
+            border-radius: 0 8px 8px 0;
+            border-left: 1px solid rgba(255,113,206,0.2);
+            pointer-events: none;
+        }
+
+        .form-group select option {
+            background: #1e0a3c;
+            color: #FFFB96;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        .form-group select option:checked,
+        .form-group select option:hover {
+            background: linear-gradient(90deg, #4a1080, #6a1a9a);
+            color: #FF71CE;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255,113,206,0.35), inset 0 0 15px rgba(255,113,206,0.08);
+        }
+        .start-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,113,206,0.25); transform: translate(-50%,-50%); transition: width 0.55s, height 0.55s; }
+        .start-btn:hover::before { width: 700px; height: 700px; }
+        .start-btn:hover { color: white; background: rgba(255,113,206,0.12); box-shadow: 0 0 35px rgba(255,113,206,0.7), inset 0 0 25px rgba(255,113,206,0.2); transform: scale(1.01); }
+
+        .message { margin-top: 20px; padding: 14px; border-radius: 8px; font-size: 14px; text-align: center; display: none; font-weight: 600; border: 2px solid; }
+        .message.error { background: rgba(255,113,206,0.08); color: var(--primary); border-color: var(--primary); box-shadow: 0 0 15px rgba(255,113,206,0.2); display: block; }
+
+        .modal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px); animation: fadeIn 0.3s ease; overflow-y: auto; padding: 30px 20px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-content {
+            background: rgba(5,1,13,0.97);
+            border: 1px solid rgba(1,205,254,0.2);
+            margin: 0 auto;
+            padding: 40px;
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 620px;
+            box-shadow: 0 0 60px rgba(0,0,0,0.7), 0 0 40px rgba(1,205,254,0.06);
+            animation: modalSlide 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .modal-content::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--secondary), var(--primary), transparent); opacity: 0.6; }
+
+        @keyframes modalSlide { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+
+        .close-btn { position: absolute; right: 20px; top: 16px; font-size: 26px; color: rgba(255,251,150,0.3); cursor: pointer; transition: all 0.2s; line-height: 1; background: none; border: none; font-family: monospace; }
+        .close-btn:hover { color: var(--primary); text-shadow: 0 0 10px rgba(255,113,206,0.6); }
+
+        .modal-content h2 { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.05em; background: linear-gradient(90deg, var(--secondary), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 18px; }
+        .modal-content > p { font-size: 14px; color: rgba(255,251,150,0.5); line-height: 1.8; margin-bottom: 14px; }
+
+        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px; }
+
+        .feature-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(1,205,254,0.12); padding: 16px; border-radius: var(--radius-md); border-left: 3px solid var(--secondary); transition: border-color 0.3s, box-shadow 0.3s; }
+        .feature-item:hover { border-left-color: var(--primary); box-shadow: 0 0 15px rgba(255,113,206,0.1); }
+        .feature-item h3 { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.05em; color: var(--secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .feature-item p { font-size: 12px; color: rgba(255,251,150,0.4); line-height: 1.7; margin: 0; }
+
+        @media (max-width: 768px) {
+            .header { padding: 14px 20px; flex-wrap: wrap; gap: 12px; }
+            .setup-card { padding: 28px 20px; }
+            .interview-form { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 28px 20px; }
+        }
+
+        /* ══════════════════════════════════
+           SCI-FI LOADING OVERLAY
+        ══════════════════════════════════ */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+
+            /* Layered dark bg + scanlines + grid */
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0,0,0,0.22) 0px, rgba(0,0,0,0.22) 1px,
+                    transparent 1px, transparent 2px
+                ),
+                linear-gradient(160deg, rgba(30,5,60,0.97) 0%, rgba(5,1,13,0.98) 100%);
+        }
+        .loading-overlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(185,103,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(185,103,255,0.05) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+        }
+        .loading-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Corner brackets */
+        .lo-corner {
+            position: absolute;
+            width: 24px; height: 24px;
+            border-color: rgba(185,103,255,0.45);
+            border-style: solid;
+            transition: all 0.6s ease;
+        }
+        .lo-corner.tl { top: 28px; left: 28px; border-width: 2px 0 0 2px; }
+        .lo-corner.tr { top: 28px; right: 28px; border-width: 2px 2px 0 0; }
+        .lo-corner.bl { bottom: 28px; left: 28px; border-width: 0 0 2px 2px; }
+        .lo-corner.br { bottom: 28px; right: 28px; border-width: 0 2px 2px 0; }
+
+        /* Outer spinning ring */
+        .lo-ring-outer {
+            position: relative;
+            width: 160px; height: 160px;
+            margin-bottom: 32px;
+            flex-shrink: 0;
+        }
+        .lo-ring-outer svg {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+        }
+        .lo-spin-cw  { animation: spinCW  3s linear infinite; }
+        .lo-spin-ccw { animation: spinCCW 2s linear infinite; }
+        @keyframes spinCW  { to { transform: rotate(360deg); } }
+        @keyframes spinCCW { to { transform: rotate(-360deg); } }
+
+        /* Inner hex icon */
+        .lo-hex {
+            position: absolute;
+            inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 46px;
+            animation: hexBreath 1.6s ease-in-out infinite;
+            filter: drop-shadow(0 0 18px rgba(255,113,206,0.9));
+        }
+        @keyframes hexBreath {
+            0%,100% { transform: scale(1);    opacity: 1; }
+            50%      { transform: scale(1.12); opacity: 0.75; }
+        }
+
+        /* Sweeping scan line across the whole overlay */
+        .lo-scan {
+            position: absolute;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, rgba(1,205,254,0.6) 40%, rgba(1,205,254,0.9) 50%, rgba(1,205,254,0.6) 60%, transparent 100%);
+            pointer-events: none;
+            animation: globalScan 2.2s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(1,205,254,0.4);
+        }
+        @keyframes globalScan {
+            0%   { top: 0%;   opacity: 0; }
+            5%   { opacity: 1; }
+            95%  { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Title */
+        .lo-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 14px rgba(255,113,206,0.5));
+        }
+
+        /* Cycling status line */
+        .lo-status {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(1,205,254,0.7);
+            margin-bottom: 22px;
+            min-height: 16px;
+            animation: statusBlink 1.1s step-start infinite;
+        }
+        @keyframes statusBlink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+        /* Progress bar */
+        .lo-bar-track {
+            width: 240px; height: 2px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        .lo-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--purple), var(--primary), var(--secondary));
+            box-shadow: 0 0 12px rgba(255,113,206,0.6);
+            transition: width 0.15s ease;
+        }
+
+        /* Dot row beneath bar */
+        .lo-dots {
+            display: flex; gap: 6px;
+            margin-top: 14px;
+        }
+        .lo-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: rgba(185,103,255,0.25);
+        }
+        .lo-dot.lit {
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <header class="header">
+        <div class="welcome-section">
+            <div class="welcome-icon">👾</div>
+            <div class="welcome-text">
+                <h2>Welcome back, <span id="username">User</span></h2>
+                <p>Ready to ace your next interview?</p>
+            </div>
+        </div>
+        <button class="about-btn" onclick="openModal()">About AIRA</button>
+    </header>
+
+    <div class="container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <h1>⚡ Setup Your Interview</h1>
+                <p>Configure your preferences and let AIRA's AI guide your performance analysis</p>
+            </div>
+
+            <form id="interviewForm" class="interview-form">
+                <div class="form-group">
+                    <label for="jobRole">💼 Job Role</label>
+                    <input type="text" id="jobRole" placeholder="e.g., Software Engineer" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulty">⚡ Difficulty Level</label>
+                    <div class="select-wrap"><select id="difficulty" required>
+                        <option value="">Select Difficulty</option>
+                        <option value="beginner">😊 Beginner</option>
+                        <option value="intermediate" selected>😐 Intermediate</option>
+                        <option value="advanced">😤 Advanced</option>
+                    </select></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numQuestions">🔢 Number of Questions</label>
+                    <input type="number" id="numQuestions" min="1" max="20" placeholder="e.g., 5" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="interviewType">🎯 Type of Interview</label>
+                    <div class="select-wrap"><select id="interviewType" required>
+                        <option value="">Select Type</option>
+                        <option value="behavioral">🗣️ Behavioral</option>
+                        <option value="technical">💻 Technical</option>
+                        <option value="mixed" selected>🎭 Mixed (Both)</option>
+                    </select></div>
+                </div>
+
+                <div class="form-group full-width">
+                    <button type="submit" class="start-btn">🚀 Start Interview</button>
+                </div>
+            </form>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <div id="aboutModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h2>◈ About AIRA</h2>
+            <p>Welcome to the most advanced AI-powered interview feedback platform — built to help you speak with confidence and land your dream role.</p>
+            <p>AIRA analyzes every dimension of your interview performance and returns precise, actionable insights so you can improve fast.</p>
+            <div class="features-grid">
+                <div class="feature-item"><h3>🎤 Filler Detection</h3><p>Tracks "um," "uh," "like" in real-time so you can speak more confidently</p></div>
+                <div class="feature-item"><h3>🎵 Pitch Analysis</h3><p>Monitors voice pitch and tone for professional, clear communication</p></div>
+                <div class="feature-item"><h3>⏱️ Pause Rate</h3><p>Measures pause frequency and duration to optimize your speaking rhythm</p></div>
+                <div class="feature-item"><h3>📹 AV Analyzer</h3><p>Full verbal and non-verbal communication breakdown in one report</p></div>
+                <div class="feature-item"><h3>📈 Performance Metrics</h3><p>Track progress over time with detailed analytics dashboards</p></div>
+                <div class="feature-item"><h3>⭐ Star Rating</h3><p>Get an overall readiness score to benchmark your interview performance</p></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ══ SCI-FI LOADING OVERLAY ══ -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="lo-corner tl"></div>
+        <div class="lo-corner tr"></div>
+        <div class="lo-corner bl"></div>
+        <div class="lo-corner br"></div>
+        <div class="lo-scan"></div>
+
+        <div class="lo-ring-outer">
+            <!-- Outer slow ring -->
+            <svg viewBox="0 0 160 160" class="lo-spin-cw" style="transform-origin:80px 80px">
+                <defs>
+                    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#FF71CE" stop-opacity="0.1"/>
+                        <stop offset="60%"  stop-color="#B967FF"/>
+                        <stop offset="100%" stop-color="#01CDFE"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(185,103,255,0.1)" stroke-width="2"/>
+                <circle cx="80" cy="80" r="70" fill="none" stroke="url(#g1)" stroke-width="2"
+                    stroke-linecap="round" stroke-dasharray="280" stroke-dashoffset="80"/>
+            </svg>
+            <!-- Inner fast ring -->
+            <svg viewBox="0 0 160 160" class="lo-spin-ccw" style="position:absolute;inset:0;transform-origin:80px 80px">
+                <defs>
+                    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#01CDFE" stop-opacity="0.1"/>
+                        <stop offset="100%" stop-color="#FF71CE"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="80" cy="80" r="56" fill="none" stroke="rgba(1,205,254,0.08)" stroke-width="1.5"/>
+                <circle cx="80" cy="80" r="56" fill="none" stroke="url(#g2)" stroke-width="1.5"
+                    stroke-linecap="round" stroke-dasharray="180" stroke-dashoffset="120"/>
+            </svg>
+            <div class="lo-hex">⬡</div>
+        </div>
+
+        <div class="lo-title">Setting Up Interview</div>
+        <div class="lo-status" id="loStatus">Initializing…</div>
+
+        <div class="lo-bar-track">
+            <div class="lo-bar-fill" id="loBar"></div>
+        </div>
+
+        <div class="lo-dots">
+            <div class="lo-dot" id="dot0"></div>
+            <div class="lo-dot" id="dot1"></div>
+            <div class="lo-dot" id="dot2"></div>
+            <div class="lo-dot" id="dot3"></div>
+            <div class="lo-dot" id="dot4"></div>
+        </div>
+    </div>
+
+    <script src="../Assets/home.js"></script>
+
+    <script>
+    (function () {
+        const form = document.getElementById('interviewForm');
+        if (!form) return;
+
+        const MESSAGES = [
+            'Initializing AI modules…',
+            'Loading question bank…',
+            'Calibrating analysis engine…',
+            'Configuring session parameters…',
+            'Launching interview…',
+        ];
+
+        // Progress keyframes: [time_ms, percent]
+        const PROGRESS = [
+            [0,    0],
+            [400,  18],
+            [800,  42],
+            [1200, 65],
+            [1600, 83],
+            [1900, 95],
+            [2000, 100],
+        ];
+
+        function showOverlay(onDone) {
+            const overlay = document.getElementById('loadingOverlay');
+            const status  = document.getElementById('loStatus');
+            const bar     = document.getElementById('loBar');
+            const dots    = [0,1,2,3,4].map(i => document.getElementById('dot'+i));
+
+            overlay.classList.add('visible');
+
+            // Cycle status messages
+            let msgIdx = 0;
+            status.textContent = MESSAGES[0];
+            const msgTimer = setInterval(() => {
+                msgIdx = Math.min(msgIdx + 1, MESSAGES.length - 1);
+                status.textContent = MESSAGES[msgIdx];
+            }, 400);
+
+            // Animate progress bar
+            PROGRESS.forEach(([ms, pct]) => {
+                setTimeout(() => { bar.style.width = pct + '%'; }, ms);
+            });
+
+            // Animate dots sequentially
+            let dotIdx = 0;
+            const dotTimer = setInterval(() => {
+                dots.forEach(d => d.classList.remove('lit'));
+                dots[dotIdx % dots.length].classList.add('lit');
+                dotIdx++;
+            }, 200);
+
+            // Done
+            setTimeout(() => {
+                clearInterval(msgTimer);
+                clearInterval(dotTimer);
+                dots.forEach(d => d.classList.add('lit'));
+                onDone();
+            }, 2000);
+        }
+
+        form.addEventListener('submit', function handler(e) {
+            // Let browser validate required fields first
+            const jobRole    = document.getElementById('jobRole').value.trim();
+            const difficulty = document.getElementById('difficulty').value;
+            const numQ       = document.getElementById('numQuestions').value;
+            const type       = document.getElementById('interviewType').value;
+            if (!jobRole || !difficulty || !numQ || !type) return;
+
+            e.preventDefault();
+
+            showOverlay(() => {
+                // Remove this interceptor then re-submit for home.js to handle
+                form.removeEventListener('submit', handler);
+                form.requestSubmit ? form.requestSubmit() : form.submit();
+            });
+        });
+    })();
+    </script>
+
+</body>
+</html>

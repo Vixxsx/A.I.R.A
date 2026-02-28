@@ -1,344 +1,230 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
-from pydantic import BaseModel
-from typing import Optional, Dict
+"""
+Interview Routes - Fixed for Emotion Detection
+"""
+
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from typing import Optional
 import os
 import shutil
+import cv2
 from datetime import datetime
 
-# Import analysis modules
+# Import your models
 from Backend.Models.whisper_stt import WhisperSTT
 from Backend.Models.filler_word_detection import FillerDetector
+from Backend.Models.emotion_detector import EmotionDetector
 from Backend.Utilities.video_utils import VideoProcessor
 from Backend.Utilities.audio_extract import AudioExtractor
-from Backend.Models.eye_tracker import EyeTracker
-from Backend.Models.emotion_detector import EmotionDetector
 
-# Create router
-router = APIRouter(prefix="/api/interview", tags=["Interview Analysis"])
+import numpy as np
 
-# Initialize analyzers (lazy loading)
-analyzers = {
-    "stt": None,
-    "filler": None,
-    "video": None,
-    "audio": None,
-    "eye": None,
-    "emotion": None
-}
-
-def get_analyzer(name: str):
-    """Get or create analyzer instance"""
-    if analyzers[name] is None:
-        if name == "stt":
-            print("🎤 Loading Whisper STT...")
-            analyzers["stt"] = WhisperSTT(model_size="base")
-        elif name == "filler":
-            analyzers["filler"] = FillerDetector(strictness="medium")
-        elif name == "video":
-            analyzers["video"] = VideoProcessor()
-        elif name == "audio":
-            analyzers["audio"] = AudioExtractor()
-        elif name == "eye":
-            print("👁️ Loading Eye Tracker...")
-            analyzers["eye"] = EyeTracker()
-        elif name == "emotion":
-            print("😊 Loading Emotion Detector...")
-            analyzers["emotion"] = EmotionDetector()
-    
-    return analyzers[name]
-
-
-# ========== REQUEST/RESPONSE MODELS ==========
-
-class AnalysisResponse(BaseModel):
-    """Complete interview analysis response"""
-    success: bool
-    answer_id: str
-    audio_analysis: Dict
-    video_analysis: Dict
-    overall_score: int
-    feedback: str
-
-
-# ========== HELPER FUNCTIONS ==========
-
-def calculate_speaking_rate_score(wpm: float) -> int:
-    """Calculate score from words per minute"""
-    if 130 <= wpm <= 160:
-        return 100
-    elif 120 <= wpm < 130 or 160 < wpm <= 170:
-        return 85
-    elif 110 <= wpm < 120 or 170 < wpm <= 180:
-        return 70
+def convert_numpy_types(obj):
+    """Convert numpy types to Python native types for JSON serialization"""
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {key: convert_numpy_types(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(item) for item in obj]
     else:
-        return 50
+        return obj
 
+router = APIRouter(prefix="/api/interview", tags=["interview"])
 
-def calculate_overall_score(
-    filler_score: int,
-    speaking_rate_score: int,
-    eye_contact_percentage: float,
-    emotion_tone: str
-) -> int:
-    """
-    Calculate overall interview answer score
-    
-    Weights:
-    - Audio quality (filler + speaking rate): 40%
-    - Eye contact: 35%
-    - Emotional presentation: 25%
-    """
-    # Audio score (40%)
-    audio_score = (filler_score * 0.6 + speaking_rate_score * 0.4)
-    audio_weighted = audio_score * 0.4
-    
-    # Eye contact score (35%)
-    eye_score = min(100, eye_contact_percentage)  # Cap at 100
-    eye_weighted = eye_score * 0.35
-    
-    # Emotion score (25%)
-    emotion_scores = {
-        "Very positive and enthusiastic": 100,
-        "Positive and engaged": 90,
-        "Professional and composed": 85,
-        "Balanced emotional expression": 75,
-        "Shows signs of stress or concern": 60
-    }
-    emotion_score = emotion_scores.get(emotion_tone, 70)
-    emotion_weighted = emotion_score * 0.25
-    
-    overall = audio_weighted + eye_weighted + emotion_weighted
-    
-    return round(overall)
+# Initialize models (you may want to do this in main.py instead)
+stt = WhisperSTT(model_size="base")
+filler_detector = FillerDetector(strictness="medium")
+emotion_detector = EmotionDetector()
+video_processor = VideoProcessor()
+audio_extractor = AudioExtractor()
 
+# Directories
+UPLOAD_DIR = "Data/Video/Raw"
+FRAMES_DIR = "Data/Video/Frames"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(FRAMES_DIR, exist_ok=True)
 
-def generate_feedback(
-    audio_analysis: Dict,
-    video_analysis: Dict,
-    overall_score: int
-) -> str:
-    """Generate friendly feedback message"""
-    feedback_parts = []
-    
-    # Overall performance
-    if overall_score >= 90:
-        feedback_parts.append("🌟 Excellent performance!")
-    elif overall_score >= 75:
-        feedback_parts.append("👍 Good job!")
-    elif overall_score >= 60:
-        feedback_parts.append("✅ Decent performance.")
-    else:
-        feedback_parts.append("📝 Room for improvement.")
-    
-    # Audio feedback
-    wpm = audio_analysis.get('words_per_minute', 0)
-    if wpm < 110:
-        feedback_parts.append("Try speaking a bit faster.")
-    elif wpm > 180:
-        feedback_parts.append("Slow down slightly for clarity.")
-    
-    filler_score = audio_analysis.get('filler_score', 100)
-    if filler_score < 70:
-        feedback_parts.append("Watch out for filler words like 'um' and 'uh'.")
-    
-    # Eye contact feedback
-    eye_contact = video_analysis.get('eye_contact_percentage', 0)
-    if eye_contact < 50:
-        feedback_parts.append("Maintain more eye contact with the camera.")
-    elif eye_contact > 80:
-        feedback_parts.append("Great eye contact!")
-    
-    # Emotion feedback
-    emotion_tone = video_analysis.get('emotional_tone', '')
-    if 'stress' in emotion_tone.lower():
-        feedback_parts.append("Try to appear more relaxed and confident.")
-    elif 'positive' in emotion_tone.lower():
-        feedback_parts.append("Your enthusiasm comes through well!")
-    
-    return " ".join(feedback_parts)
-
-
-# ========== API ENDPOINTS ==========
 
 @router.post("/analyze-answer")
-async def analyze_interview_answer(
+async def analyze_answer(
     video: UploadFile = File(...),
-    question_id: Optional[str] = Form(None),
-    question_number: Optional[int] = Form(None)
+    question: str = Form(...),
+    questionNumber: int = Form(...)
 ):
-    """
-    Complete analysis of interview answer
-    
-    Processes video file and returns:
-    - Audio transcription + filler words + speaking rate
-    - Eye contact tracking
-    - Emotion detection
-    - Overall score + feedback
-    
-    Args:
-        video: Video file from WebRTC recording
-        question_id: Optional question identifier
-        question_number: Optional question number (1-5)
-    
-    Returns:
-        Complete analysis results
-    """
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    answer_id = f"answer_{timestamp}"
-    
-    # Temp paths
-    video_processor = get_analyzer("video")
-    temp_video_path = os.path.join(video_processor.raw_path, f"{answer_id}.mp4")
-    
     try:
         # Step 1: Save uploaded video
-        print(f"\n{'='*70}")
-        print(f"📹 ANALYZING INTERVIEW ANSWER: {answer_id}")
-        print(f"{'='*70}\n")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        video_filename = f"question_{questionNumber}_{timestamp}.webm"
+        video_path = os.path.join(UPLOAD_DIR, video_filename)
         
-        print("💾 Step 1: Saving video...")
-        with open(temp_video_path, "wb") as buffer:
+        with open(video_path, "wb") as buffer:
             shutil.copyfileobj(video.file, buffer)
-        print(f"   ✅ Saved: {temp_video_path}")
         
-        # Step 2: Extract audio
-        print("\n🎵 Step 2: Extracting audio...")
-        audio_extract = get_analyzer("audio")
-        audio_path = audio_extract.extract_audio(
-            temp_video_path,
-            output_filename=f"{answer_id}.wav"
-        )
+        print(f"\n{'='*60}")
+        print(f"🎯 Analyzing Question {questionNumber}")
+        print(f"📁 Video saved: {video_path}")
+        print(f"❓ Question: {question}")
+        print(f"{'='*60}\n")
         
-        # Step 3: Transcribe audio
-        print("\n🎤 Step 3: Transcribing speech...")
-        stt = get_analyzer("stt")
-        transcription = stt.transcribe_audio(audio_path)
-        transcript_text = transcription["text"]
+        # Step 2: Extract audio and transcribe
+        print("🎤 Step 1: Extracting audio and transcribing...")
+        audio_path = audio_extractor.extract_audio(video_path)
+        transcript_result = stt.transcribe_audio(audio_path)
+        transcript_text = transcript_result["text"]
+        stats = stt.get_speaking_stats(transcript_result)
+
+        print(f"✅ Transcription complete: {stats['total_words']} words")
+        print(f"   Speaking rate: {stats['words_per_minute']} WPM")
         
-        # Step 4: Get speaking stats
-        print("\n📊 Step 4: Calculating speaking stats...")
-        stats = stt.get_speaking_stats(transcription)
-        wpm = stats["words_per_minute"]
-        speaking_rate_score = calculate_speaking_rate_score(wpm)
-        
-        # Step 5: Analyze fillers
-        print("\n🔍 Step 5: Detecting filler words...")
-        filler_detector = get_analyzer("filler")
+        # Step 3: Analyze filler words
+        print("\n🔍 Step 2: Analyzing filler words...")
         filler_result = filler_detector.detect_fillers(transcript_text)
         
-        # Step 6: Extract frames for video analysis
-        print("\n🎬 Step 6: Extracting video frames...")
-        frames = video_processor.extract_frames(
-            video_path=temp_video_path,
-            every_nth=30,  # ~1 frame per second at 30fps
-            return_arrays=True
-        )
-        print(f"   ✅ Extracted {len(frames)} frames")
+        print(f"✅ Filler analysis complete:")
+        print(f"   Total fillers: {filler_result['total_fillers']}")
+        print(f"   Filler density: {filler_result['filler_density_percentage']}%")
+        print(f"   Filler score: {filler_result['score']}/100")
         
-        # Step 7: Eye contact tracking
-        print("\n👁️ Step 7: Tracking eye contact...")
-        eye_tracker = get_analyzer("eye")
-        eye_result = eye_tracker.analyze_frames_list(frames)
-        eye_contact_percentage = eye_result['summary']['eye_contact_percentage']
+        # Step 4: Extract frames
+        print("\n📸 Step 3: Extracting video frames...")
+        frames_output_dir = os.path.join(FRAMES_DIR, f"question_{questionNumber}_{timestamp}")
+        os.makedirs(frames_output_dir, exist_ok=True)
         
-        # Step 8: Emotion detection
-        print("\n😊 Step 8: Detecting emotions...")
-        emotion_detector = get_analyzer("emotion")
-        emotion_result = emotion_detector.analyze_frames_list(frames)
-        emotion_tone = emotion_result['summary']['emotional_tone']
-        
-        # Step 9: Calculate overall score
-        print("\n🎯 Step 9: Calculating overall score...")
-        overall_score = calculate_overall_score(
-            filler_score=filler_result["score"],
-            speaking_rate_score=speaking_rate_score,
-            eye_contact_percentage=eye_contact_percentage,
-            emotion_tone=emotion_tone
+        frame_paths = video_processor.extract_frames(
+            video_path,
+            output_folder=frames_output_dir,
+            every_nth=30,
+            max_frames=30,
+            return_arrays=True  
         )
         
-        # Step 10: Generate feedback
-        audio_analysis = {
-            "transcript": transcript_text,
-            "word_count": stats["total_words"],
-            "words_per_minute": round(wpm, 1),
-            "speaking_rate_score": speaking_rate_score,
-            "filler_words": filler_result["filler_frequency"],
-            "total_fillers": filler_result["total_fillers"],
-            "filler_score": filler_result["score"],
-            "duration_seconds": stats["duration_seconds"]
-        }
+        print(f"✅ Extracted {len(frame_paths)} frames")
         
-        video_analysis = {
-            "eye_contact_percentage": eye_contact_percentage,
-            "dominant_emotion": emotion_result['summary']['dominant_emotion_overall'],
-            "emotion_distribution": emotion_result['summary']['emotion_distribution'],
-            "emotional_tone": emotion_tone,
-            "frames_analyzed": len(frames)
-        }
+        # Step 5: Analyze emotions
+        print("\n😊 Step 4: Analyzing emotions from frames...")
         
-        feedback = generate_feedback(audio_analysis, video_analysis, overall_score)
+        # Load frames for emotion analysis
+          # Analyze first 30 frames max
         
-        print(f"\n{'='*70}")
-        print(f"✅ ANALYSIS COMPLETE!")
-        print(f"   Overall Score: {overall_score}/100")
-        print(f"   Eye Contact: {eye_contact_percentage}%")
-        print(f"   Speaking Rate: {round(wpm, 1)} WPM")
-        print(f"   Emotional Tone: {emotion_tone}")
-        print(f"{'='*70}\n")
+        emotion_results = emotion_detector.analyze_frames_list(frame_paths)
         
-        # Return results
-        return {
+        print(f"✅ Emotion analysis complete")
+        
+        # Step 6: Calculate audio quality score
+        print("\n📊 Step 5: Calculating overall scores...")
+        words_per_minute = stats["words_per_minute"]
+        
+        if 130 <= words_per_minute <= 160:
+            speaking_rate_score = 100
+        elif 120 <= words_per_minute < 130 or 160 < words_per_minute <= 170:
+            speaking_rate_score = 85
+        elif 110 <= words_per_minute < 120 or 170 < words_per_minute <= 180:
+            speaking_rate_score = 70
+        else:
+            speaking_rate_score = 50
+        
+        # Overall audio score (filler words + speaking rate)
+        audio_quality_score = round(
+            (filler_result["score"] * 0.6) + (speaking_rate_score * 0.4)
+        )
+        
+        # FIX: Extract dominant emotion from distribution
+        emotion_distribution = emotion_results['summary']['emotion_distribution']
+        dominant_emotion_overall = max(emotion_distribution, key=emotion_distribution.get)
+        dominant_emotion_score = emotion_distribution[dominant_emotion_overall]
+        
+        # Body language score (based on emotion assessment)
+        emotion_summary = emotion_results['summary']
+        body_language_score = round(
+            (emotion_summary['confidence_score'] * 0.4) +
+            (emotion_summary['professionalism_score'] * 0.4) +
+            ((100 - emotion_summary['nervousness_score']) * 0.2)
+        )
+        
+        print(f"✅ Scoring complete:")
+        print(f"   Audio Quality: {audio_quality_score}/100")
+        print(f"   Body Language: {body_language_score}/100")
+        print(f"   Dominant Emotion: {dominant_emotion_overall} ({dominant_emotion_score:.1f}%)")
+        
+        print(f"\n{'='*60}")
+        print(f"✅ Question {questionNumber} analysis complete!")
+        print(f"{'='*60}\n")
+        
+        # Return comprehensive results
+        result = {
             "success": True,
-            "answer_id": answer_id,
-            "question_id": question_id,
-            "question_number": question_number,
-            "audio_analysis": audio_analysis,
-            "video_analysis": video_analysis,
-            "overall_score": overall_score,
-            "feedback": feedback,
-            "timestamp": timestamp
+            "question_number": questionNumber,
+            "question": question,
+            "video_path": video_path,
+            "frames_dir": frames_output_dir,
+            "transcript": {
+                "text": transcript_text,
+                "word_count": stats["total_words"],
+                "duration_seconds": stats["duration_seconds"],
+                "words_per_minute": round(words_per_minute, 1),
+                "speaking_time": stats["speaking_time_seconds"]
+            },
+            "filler_analysis": {
+                "total_fillers": filler_result["total_fillers"],
+                "filler_density": filler_result["filler_density_percentage"],
+                "filler_frequency": filler_result["filler_frequency"],
+                "score": filler_result["score"]
+            },
+            "audio_quality": {
+                "speaking_rate_score": speaking_rate_score,
+                "filler_score": filler_result["score"],
+                "overall_score": audio_quality_score
+            },
+            "emotion_analysis": {
+                "dominant_emotion": dominant_emotion_overall,
+                "dominant_emotion_confidence": round(dominant_emotion_score, 1),
+                "emotion_distribution": emotion_distribution,
+                "confidence_score": emotion_summary['confidence_score'],
+                "enthusiasm_score": emotion_summary['enthusiasm_score'],
+                "nervousness_score": emotion_summary['nervousness_score'],
+                "professionalism_score": emotion_summary['professionalism_score'],
+                "emotional_tone": emotion_summary['emotional_tone'],
+                "feedback": emotion_summary['interview_feedback']
+            },
+            "body_language": {
+                "score": body_language_score,
+                "appears_confident": emotion_summary['appeared_confident_percentage'] > 50,
+                "appears_nervous": emotion_summary['appeared_nervous_percentage'] > 30,
+                "appears_enthusiastic": emotion_summary['appeared_enthusiastic_percentage'] > 40
+            },
+            "overall_assessment": {
+                "audio_quality_score": audio_quality_score,
+                "body_language_score": body_language_score,
+                "emotional_tone": emotion_summary['emotional_tone']
+            }
         }
+        return convert_numpy_types(result)
     
     except Exception as e:
-        print(f"\n❌ ANALYSIS FAILED: {str(e)}\n")
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"\n{'='*60}")
+        print(f"❌ ANALYSIS FAILED: {str(e)}")
+        print(f"{'='*60}")
+        print(error_details)
+        print(f"{'='*60}\n")
+        
         raise HTTPException(
             status_code=500,
             detail=f"Analysis failed: {str(e)}"
         )
-    
-    finally:
-        # Cleanup temp files (optional - keep for debugging)
-        # os.remove(temp_video_path)
-        # os.remove(audio_path)
-        pass
 
 
 @router.get("/test")
-async def test_interview_analyzer():
-    """Test if all analyzers can be loaded"""
-    try:
-        status = {}
-        
-        # Test each analyzer
-        analyzers_to_test = ["stt", "filler", "video", "audio", "eye", "emotion"]
-        
-        for name in analyzers_to_test:
-            try:
-                get_analyzer(name)
-                status[name] = "✅ Ready"
-            except Exception as e:
-                status[name] = f"❌ Error: {str(e)}"
-        
-        all_ready = all("✅" in s for s in status.values())
-        
-        return {
-            "success": all_ready,
-            "message": "All analyzers ready!" if all_ready else "Some analyzers failed to load",
-            "analyzers": status
+def test_interview_api():
+    """Test endpoint"""
+    return {
+        "message": "Interview API is working!",
+        "endpoints": {
+            "analyze_answer": "POST /api/interview/analyze-answer"
         }
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Test failed: {str(e)}"
-        )
+    }

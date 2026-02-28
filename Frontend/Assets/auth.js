@@ -74,7 +74,7 @@ async function handleLogin(e) {
 
             // Redirect after 1.5 seconds
             setTimeout(() => {
-                window.location.href = 'Start.html';
+                window.location.href = 'home.html';
             }, 1500);
         } else {
             // Error from backend

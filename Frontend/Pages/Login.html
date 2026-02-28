@@ -3,62 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Interview Feedback Analyzer</title>
-    <link rel="stylesheet" href="../Components/style.css">
+    <title>Login - AIRA</title>
+    <link rel="stylesheet" href="../Components/theme.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 50%, #8e24aa 100%);
+            overflow: hidden;
+        }
+
+        .grid-bg {
+            display: none;
+        }
+
+        .login-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+            max-height: 100vh;
+        }
+
+        /* LEFT SIDE - Features */
+        .features-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .brand-section {
+            margin-bottom: 40px;
+        }
+
+        .brand-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 113, 206, 0.6));
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 48px;
+            font-weight: 900;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .brand-tagline {
+            font-size: 18px;
+            color: rgba(255, 251, 150, 0.9);
+            line-height: 1.6;
+        }
+
+        .features-list {
+            list-style: none;
+        }
+
+        .features-list li {
+            padding: 16px 0;
+            font-size: 18px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .features-list li::before {
+            content: '✓';
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            color: var(--dark);
+            font-weight: 900;
+            box-shadow: 0 0 10px rgba(5, 255, 161, 0.6);
+        }
+
+        /* RIGHT SIDE - Form */
+        .form-side {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: linear-gradient(160deg,
+                #001208 0%,
+                #001f0e 35%,
+                #000d07 65%,
+                #001a0c 100%
+            );
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Scanline CRT overlay */
+        .form-side::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.2),
+                rgba(0, 0, 0, 0.2) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.6;
+        }
+
+        /* Neon green perspective grid */
+        .form-side::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(57, 255, 20, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.06) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Neon glow blobs */
+        .glow-blob-1 {
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 380px; height: 380px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(57, 255, 20, 0.1) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .glow-blob-2 {
+            position: absolute;
+            bottom: -80px; left: -80px;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(5, 255, 161, 0.08) 0%, transparent 65%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .glow-blob-3 {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px; height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(1, 205, 254, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .form-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(255, 113, 206, 0.5));
+        }
+
+        .form-title {
+            font-family: var(--font-display);
+            font-size: 32px;
+            color: var(--text);
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(255, 113, 206, 0.4);
+        }
+
+        .form-subtitle {
+            font-size: 14px;
+            color: rgba(255, 251, 150, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 251, 150, 0.75);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text);
+            background: rgba(5, 1, 13, 0.6);
+            transition: all 0.3s ease;
+            font-family: var(--font-body);
+            box-shadow: inset 0 0 10px rgba(1, 205, 254, 0.1);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(5, 1, 13, 0.8);
+            box-shadow:
+                0 0 20px rgba(255, 113, 206, 0.5),
+                inset 0 0 10px rgba(255, 113, 206, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 251, 150, 0.25);
+        }
+
+        .remember-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-row input[type="checkbox"] {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .remember-row label {
+            font-size: 14px;
+            color: rgba(255, 251, 150, 0.5);
+            cursor: pointer;
+        }
+
+        /* ── NEON SUBMIT BUTTON (from theme.css) ── */
+        .submit-btn {
+            width: 100%;
+            padding: 15px 40px;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 700;
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 0 10px rgba(255, 113, 206, 0.4),
+                inset 0 0 10px rgba(255, 113, 206, 0.1);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 113, 206, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .submit-btn:hover {
+            color: var(--white);
+            background: rgba(255, 113, 206, 0.2);
+            box-shadow:
+                0 0 20px rgba(255, 113, 206, 0.8),
+                inset 0 0 20px rgba(255, 113, 206, 0.3);
+            transform: scale(1.02);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: rgba(255, 251, 150, 0.4);
+        }
+
+        .form-footer a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 8px rgba(1, 205, 254, 0.4);
+        }
+
+        .form-footer a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 12px rgba(255, 113, 206, 0.6);
+        }
+
+        @media (max-width: 968px) {
+            .login-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .features-side {
+                display: none;
+            }
+
+            .form-side {
+                background: linear-gradient(160deg, #001208 0%, #001f0e 50%, #000d07 100%);
+            }
+
+            .form-container {
+                background: rgba(5, 1, 13, 0.85);
+                padding: 40px;
+                border-radius: 20px;
+                border: 1px solid rgba(1, 205, 254, 0.2);
+                box-shadow: 0 0 40px rgba(255, 113, 206, 0.15);
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-card">
-        <div class="side-panel">
-            <div style="font-size: 40px; margin-bottom: 10px;">🎤</div>
-            <h2>Interview Analyzer</h2>
-            <p>Transform interview feedback into actionable insights with AI-powered analytics.</p>
-            <ul class="feature-list">
-                <li>✓ AI-Powered Analysis</li>
-                <li>✓ Real-time Processing</li>
-                <li>✓ Performance Dashboards</li>
-                <li>✓ Comprehensive Reports</li>
+    <div class="login-wrapper">
+        <!-- LEFT SIDE - Features -->
+        <div class="features-side">
+            <div class="brand-section">
+                <div class="brand-icon">🎯</div>
+                <h1 class="brand-title">AIRA</h1>
+                <p class="brand-tagline">
+                    Transform interview feedback into actionable insights with AI-powered analytics.
+                </p>
+            </div>
+
+            <ul class="features-list">
+                <li>AI-Powered Analysis</li>
+                <li>Real-time Processing</li>
+                <li>Performance Dashboards</li>
+                <li>Comprehensive Reports</li>
             </ul>
         </div>
 
-        <div class="form-panel">
-            <div class="form-header">
-                <div style="font-size: 40px;">👤</div>
-                <h1>Welcome Back</h1>
-                <p style="color: #666; font-size: 14px; margin-top: 5px;">Login to access your dashboard</p>
-            </div>
+        <!-- RIGHT SIDE - Form -->
+        <div class="form-side">
+            <div class="glow-blob-1"></div>
+            <div class="glow-blob-2"></div>
+            <div class="glow-blob-3"></div>
+            <div class="form-container">
+                <div class="form-header">
+                    <div class="form-icon">👤</div>
+                    <h2 class="form-title">Welcome Back</h2>
+                    <p class="form-subtitle">Login to access your dashboard</p>
+                </div>
 
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <div class="input-container">
-                        <span class="field-icon">👤</span>
-                        <input type="text" id="username" placeholder="Enter your username" required>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                class="form-input" 
+                                placeholder="Enter your username" 
+                                required
+                                autocomplete="username"
+                            >
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>Password</label>
-                    <div class="input-container">
-                        <span class="field-icon">🔒</span>
-                        <input type="password" id="password" placeholder="Enter your password" required>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                class="form-input" 
+                                placeholder="Enter your password" 
+                                required
+                                autocomplete="current-password"
+                            >
+                        </div>
                     </div>
+
+                    <div class="remember-row">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Login</button>
+                </form>
+
+                <div class="form-footer">
+                    New to Interview Analyzer? 
+                    <a href="Register.html">Create Account</a>
                 </div>
-
-                <div style="display: flex; align-items: center; margin-bottom: 25px; font-size: 13px;">
-                    <label style="display: flex; align-items: center; cursor: pointer; color: #555;">
-                        <input type="checkbox" id="rememberMe" style="margin-right: 8px;">
-                        Remember me
-                    </label>
-                </div>
-
-                <button type="submit" class="submit-btn">LOGIN</button>
-            </form>
-
-            <div style="text-align: center; margin-top: 25px; font-size: 14px;">
-                New to Interview Analyzer? <a href="Register.html?dir=right" style="color: #6366f1; font-weight: 700; text-decoration: none;">Create Account</a>
             </div>
         </div>
     </div>
+
+    <div id="message" class="message" style="
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: none;
+        min-width: 300px;
+    "></div>
 
     <script src="../Assets/auth.js"></script>
 </body>

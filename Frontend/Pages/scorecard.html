@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background: linear-gradient(-45deg,#5b9ad4, #6fe27c, #d4ec5f, #f49829);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
@@ -83,7 +83,7 @@
 
         .header h1 {
             font-size: 36px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #5b9ad4, #6fe27c);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -132,10 +132,10 @@
             box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
 
-        .category-box.content-box { border-color: #8b5cf6; }
-        .category-box.audio-box { border-color: #10b981; }
-        .category-box.eye-box { border-color: #f59e0b; }
-        .category-box.emotion-box { border-color: #3b82f6; }
+        .category-box.content-box { border-color: #5b9ad4; }
+        .category-box.audio-box { border-color: #6fe27c; }
+        .category-box.eye-box { border-color: #d4ec5f; }
+        .category-box.emotion-box { border-color: #f49829; }
 
         .circle-icon {
             font-size: 40px;
@@ -241,7 +241,7 @@
         .calculate-btn {
             width: 100%;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #5b9ad4, #f49829);
             color: white;
             border: none;
             border-radius: 15px;
@@ -251,12 +251,12 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 2px;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(91, 154, 212, 0.3);
         }
 
         .calculate-btn:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 15px 35px rgba(91, 154, 212, 0.5);
         }
 
         .calculate-btn:disabled {
@@ -308,39 +308,39 @@
         }
 
         .grade-badge-large.grade-S {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            background: linear-gradient(135deg, #d4ec5f, #f49829);
             animation: pulseGold 2s ease infinite;
         }
 
         .grade-badge-large.grade-A {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            background: linear-gradient(135deg, #6fe27c, #d4ec5f);
             animation: pulsePurple 2s ease infinite;
         }
 
         .grade-badge-large.grade-B {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, #5b9ad4, #6fe27c);
         }
 
         .grade-badge-large.grade-C {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+            background: linear-gradient(135deg, #d4ec5f, #f49829);
         }
 
         .grade-badge-large.grade-D {
-            background: linear-gradient(135deg, #f97316, #ea580c);
+            background: linear-gradient(135deg, #f49829, #ee4d34);
         }
 
         .grade-badge-large.grade-F {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #ee4d34, #d43d2a);
         }
 
         @keyframes pulseGold {
-            0%, 100% { box-shadow: 0 20px 50px rgba(251, 191, 36, 0.5); }
-            50% { box-shadow: 0 25px 60px rgba(251, 191, 36, 0.8); transform: scale(1.05); }
+            0%, 100% { box-shadow: 0 20px 50px rgba(244, 152, 41, 0.5); }
+            50% { box-shadow: 0 25px 60px rgba(244, 152, 41, 0.8); transform: scale(1.05); }
         }
 
         @keyframes pulsePurple {
-            0%, 100% { box-shadow: 0 20px 50px rgba(139, 92, 246, 0.5); }
-            50% { box-shadow: 0 25px 60px rgba(139, 92, 246, 0.8); transform: scale(1.05); }
+            0%, 100% { box-shadow: 0 20px 50px rgba(111, 226, 124, 0.5); }
+            50% { box-shadow: 0 25px 60px rgba(111, 226, 124, 0.8); transform: scale(1.05); }
         }
 
         .score-display {
@@ -371,12 +371,12 @@
         }
 
         .strengths-card {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #6fe27c, #d4ec5f);
             color: white;
         }
 
         .weaknesses-card {
-            background: linear-gradient(135deg, #f97316, #ea580c);
+            background: linear-gradient(135deg, #f49829, #ee4d34);
             color: white;
         }
 
@@ -411,7 +411,7 @@
         }
 
         .advice-card {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, #5b9ad4, #6fe27c);
             color: white;
             border-radius: 20px;
             padding: 30px;
@@ -468,24 +468,24 @@
         }
 
         .btn-try-again {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #5b9ad4, #f49829);
             color: white;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(91, 154, 212, 0.3);
         }
 
         .btn-try-again:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 15px 35px rgba(91, 154, 212, 0.5);
         }
 
         .btn-dashboard {
             background: white;
-            color: #667eea;
-            border: 3px solid #667eea;
+            color: #5b9ad4;
+            border: 3px solid #5b9ad4;
         }
 
         .btn-dashboard:hover {
-            background: #667eea;
+            background: #5b9ad4;
             color: white;
         }
 
@@ -496,7 +496,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(102, 126, 234, 0.95);
+            background: linear-gradient(135deg, #5b9ad4, #6fe27c);
             display: none;
             align-items: center;
             justify-content: center;
@@ -547,16 +547,16 @@
             100% { opacity: 1; transform: translate(-50%, -50%) scale(1.5) rotate(0deg); }
         }
 
-        .grade-F { color: #d43d2a; }
-        .grade-D { color: #ee4d34; }
-        .grade-C { color: #f49829; }
+        .grade-F { color: #ee4d34; }
+        .grade-D { color: #f49829; }
+        .grade-C { color: #d4ec5f; }
         .grade-B { color: #6fe27c; }
         .grade-A { color: #d4ec5f; }
         .grade-S { 
-            color: #f49829;
+            color: #fbe238;
             text-shadow: 
-                0 0 40px rgba(251, 191, 36, 1),
-                0 0 80px rgba(251, 191, 36, 0.8);
+                0 0 40px rgba(251, 226, 56, 1),
+                0 0 80px rgba(251, 226, 56, 0.8);
         }
 
         .flash {
@@ -616,8 +616,8 @@
                             <svg width="150" height="150">
                                 <defs>
                                     <linearGradient id="gradientContent" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                                        <stop offset="0%" style="stop-color:#5b9ad4;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#6fe27c;stop-opacity:1" />
                                     </linearGradient>
                                 </defs>
                                 <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
@@ -635,8 +635,8 @@
                                 <span class="detail-value" id="contentAddresses">✅</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">Examples Given</span>
-                                <span class="detail-value" id="contentExamples">2</span>
+                                <span class="detail-label">Questions Answered</span>
+                                <span class="detail-value" id="contentExamples">0</span>
                             </div>
                             <div class="feedback-box" id="contentFeedback">Loading...</div>
                         </div>
@@ -649,8 +649,8 @@
                             <svg width="150" height="150">
                                 <defs>
                                     <linearGradient id="gradientAudio" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+                                        <stop offset="0%" style="stop-color:#6fe27c;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#d4ec5f;stop-opacity:1" />
                                     </linearGradient>
                                 </defs>
                                 <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
@@ -665,15 +665,15 @@
                         <div class="category-details">
                             <div class="detail-item">
                                 <span class="detail-label">Filler Words</span>
-                                <span class="detail-value" id="audioFillers">2 (0.5%)</span>
+                                <span class="detail-value" id="audioFillers">0 (0%)</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Speaking Rate</span>
-                                <span class="detail-value" id="audioRate">145 WPM</span>
+                                <span class="detail-value" id="audioRate">0 WPM</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Clarity</span>
-                                <span class="detail-value" id="audioClarity">Excellent</span>
+                                <span class="detail-value" id="audioClarity">Loading...</span>
                             </div>
                             <div class="feedback-box" id="audioFeedback">Loading...</div>
                         </div>
@@ -686,8 +686,8 @@
                             <svg width="150" height="150">
                                 <defs>
                                     <linearGradient id="gradientEye" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+                                        <stop offset="0%" style="stop-color:#d4ec5f;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#fbe238;stop-opacity:1" />
                                     </linearGradient>
                                 </defs>
                                 <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
@@ -702,11 +702,11 @@
                         <div class="category-details">
                             <div class="detail-item">
                                 <span class="detail-label">Camera Focus</span>
-                                <span class="detail-value" id="eyeFocus">65%</span>
+                                <span class="detail-value" id="eyeFocus">0%</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Engagement</span>
-                                <span class="detail-value" id="eyeEngagement">Moderate</span>
+                                <span class="detail-value" id="eyeEngagement">Loading...</span>
                             </div>
                             <div class="feedback-box" id="eyeFeedback">Loading...</div>
                         </div>
@@ -719,8 +719,8 @@
                             <svg width="150" height="150">
                                 <defs>
                                     <linearGradient id="gradientEmotion" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+                                        <stop offset="0%" style="stop-color:#fbe238;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#f49829;stop-opacity:1" />
                                     </linearGradient>
                                 </defs>
                                 <circle class="progress-bg" cx="75" cy="75" r="65"></circle>
@@ -735,11 +735,11 @@
                         <div class="category-details">
                             <div class="detail-item">
                                 <span class="detail-label">Confidence</span>
-                                <span class="detail-value" id="emotionConfidence">High</span>
+                                <span class="detail-value" id="emotionConfidence">Loading...</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Enthusiasm</span>
-                                <span class="detail-value" id="emotionEnthusiasm">Good</span>
+                                <span class="detail-value" id="emotionEnthusiasm">Loading...</span>
                             </div>
                             <div class="feedback-box" id="emotionFeedback">Loading...</div>
                         </div>
@@ -760,7 +760,7 @@
                         <span id="gradeLetter">A</span>
                     </div>
                     <div class="score-display">
-                        Overall Score: <span id="overallScore">80</span>/100
+                        Overall Score: <span id="overallScore">0</span>/100
                     </div>
                     <div class="score-message" id="scoreMessage">✨ GREAT! WELL DONE! ✨</div>
                 </div>
@@ -790,8 +790,8 @@
             </div>
 
             <div class="actions">
-                <a href="Dashboard.html" class="action-btn btn-dashboard">← Back to Dashboard</a>
-                <a href="start.html" class="action-btn btn-try-again">🔄 Try Again</a>
+                <a href="home.html" class="action-btn btn-dashboard">← Back to Dashboard</a>
+                <a href="home.html" class="action-btn btn-try-again">🔄 Try Again</a>
             </div>
         </div>
     </div>
@@ -804,12 +804,189 @@
     <div class="flash" id="flash"></div>
 
     <script>
-        const scoreData = {
-            content: { score: 85, addresses: true, examples: 2, feedback: "Good answer with specific examples demonstrating relevant experience." },
-            audio: { score: 92, fillers: 2, filler_density: 0.5, wpm: 145, clarity: "Excellent", feedback: "Excellent speaking pace with minimal filler words." },
-            eye_contact: { score: 65, focus_percent: 65, engagement: "Moderate", feedback: "Try to maintain more consistent eye contact." },
-            emotions: { score: 78, confidence: "High", enthusiasm: "Good", feedback: "Projected confidence throughout the interview." }
-        };
+        // ========== LOAD REAL DATA FROM BACKEND ==========
+        let scoreData = null;
+        let interviewResults = [];
+
+        function loadInterviewData() {
+            try {
+                // Get results from sessionStorage (set by interview.js)
+                const resultsJson = sessionStorage.getItem('interviewResults');
+                
+                if (!resultsJson) {
+                    console.error('❌ No interview results found!');
+                    console.log('Using demo data for preview...');
+                    // Don't redirect - use demo data instead
+                    scoreData = getDemoData();
+                    return true;
+                }
+
+                interviewResults = JSON.parse(resultsJson);
+                console.log('✅ Loaded interview results:', interviewResults);
+
+                // Calculate average scores across all questions
+                scoreData = calculateAverageScores(interviewResults);
+                console.log('📊 Calculated average scores:', scoreData);
+
+                return true;
+            } catch (error) {
+                console.error('❌ Error loading interview data:', error);
+                console.log('Using demo data...');
+                scoreData = getDemoData();
+                return true;
+            }
+        }
+
+        function calculateAverageScores(results) {
+            if (!results || results.length === 0) {
+                return getDemoData();
+            }
+
+            let totalContent = 0;
+            let totalAudio = 0;
+            let totalEyeContact = 0;
+            let totalBodyLanguage = 0;
+            
+            let contentCount = 0;
+            let audioCount = 0;
+            let eyeCount = 0;
+            let bodyCount = 0;
+
+            // Aggregate data from all questions
+            let allFillers = 0;
+            let totalWords = 0;
+            let totalWPM = 0;
+            let wpmCount = 0;
+            
+            let confidenceScores = [];
+            let enthusiasmScores = [];
+            let emotionalTones = [];
+
+            results.forEach(result => {
+                if (!result.success) return;
+
+                // Content Relevancy (placeholder - would need Grok analysis)
+                if (result.transcript) {
+                    const wordCount = result.transcript.word_count || 0;
+                    const duration = result.transcript.duration_seconds || 1;
+                    
+                    // Heuristic: Good answers are 30-120 seconds with 50-250 words
+                    let contentScore = 70;
+                    if (wordCount >= 50 && wordCount <= 250) contentScore += 15;
+                    if (duration >= 30 && duration <= 120) contentScore += 15;
+                    
+                    totalContent += contentScore;
+                    contentCount++;
+                }
+
+                // Audio Quality
+                if (result.audio_quality) {
+                    totalAudio += result.audio_quality.overall_score;
+                    audioCount++;
+                    
+                    if (result.filler_analysis) {
+                        allFillers += result.filler_analysis.total_fillers;
+                        totalWords += result.transcript?.word_count || 0;
+                    }
+                    
+                    if (result.transcript?.words_per_minute) {
+                        totalWPM += result.transcript.words_per_minute;
+                        wpmCount++;
+                    }
+                }
+
+                // Eye Contact (placeholder)
+                totalEyeContact += 70;
+                eyeCount++;
+
+                // Body Language
+                if (result.body_language) {
+                    totalBodyLanguage += result.body_language.score;
+                    bodyCount++;
+                    
+                    if (result.emotion_analysis) {
+                        confidenceScores.push(result.emotion_analysis.confidence_score);
+                        enthusiasmScores.push(result.emotion_analysis.enthusiasm_score);
+                        emotionalTones.push(result.emotion_analysis.emotional_tone);
+                    }
+                }
+            });
+
+            // Calculate averages
+            const avgContent = contentCount > 0 ? Math.round(totalContent / contentCount) : 70;
+            const avgAudio = audioCount > 0 ? Math.round(totalAudio / audioCount) : 75;
+            const avgEyeContact = eyeCount > 0 ? Math.round(totalEyeContact / eyeCount) : 70;
+            const avgBodyLanguage = bodyCount > 0 ? Math.round(totalBodyLanguage / bodyCount) : 75;
+
+            const avgWPM = wpmCount > 0 ? Math.round(totalWPM / wpmCount) : 145;
+            const fillerDensity = totalWords > 0 ? ((allFillers / totalWords) * 100).toFixed(1) : 0.5;
+
+            const avgConfidence = confidenceScores.length > 0 
+                ? (confidenceScores.reduce((a,b) => a+b, 0) / confidenceScores.length).toFixed(1)
+                : 50;
+            
+            const avgEnthusiasm = enthusiasmScores.length > 0
+                ? (enthusiasmScores.reduce((a,b) => a+b, 0) / enthusiasmScores.length).toFixed(1)
+                : 50;
+
+            const clarity = avgAudio >= 85 ? "Excellent" : avgAudio >= 70 ? "Good" : "Needs Improvement";
+            const confidenceLevel = avgConfidence >= 60 ? "High" : avgConfidence >= 40 ? "Moderate" : "Low";
+            const enthusiasmLevel = avgEnthusiasm >= 60 ? "High" : avgEnthusiasm >= 40 ? "Good" : "Low";
+            const dominantTone = emotionalTones.length > 0 ? emotionalTones[0] : "Professional";
+
+            return {
+                content: {
+                    score: avgContent,
+                    addresses: avgContent >= 70,
+                    examples: results.length,
+                    feedback: avgContent >= 80 
+                        ? "Strong answers with relevant examples and clear explanations."
+                        : avgContent >= 60
+                        ? "Good responses, but could provide more specific examples."
+                        : "Try to give more detailed answers with concrete examples."
+                },
+                audio: {
+                    score: avgAudio,
+                    fillers: allFillers,
+                    filler_density: parseFloat(fillerDensity),
+                    wpm: avgWPM,
+                    clarity: clarity,
+                    feedback: avgAudio >= 85
+                        ? "Excellent speaking pace with minimal filler words."
+                        : avgAudio >= 70
+                        ? "Good audio quality. Try to reduce filler words slightly."
+                        : "Focus on speaking more clearly and reducing filler words."
+                },
+                eye_contact: {
+                    score: avgEyeContact,
+                    focus_percent: avgEyeContact,
+                    engagement: avgEyeContact >= 75 ? "Good" : avgEyeContact >= 60 ? "Moderate" : "Needs Improvement",
+                    feedback: avgEyeContact >= 75
+                        ? "Maintained good camera focus throughout the interview."
+                        : "Try to look directly at the camera more consistently."
+                },
+                emotions: {
+                    score: avgBodyLanguage,
+                    confidence: confidenceLevel,
+                    enthusiasm: enthusiasmLevel,
+                    tone: dominantTone,
+                    feedback: avgBodyLanguage >= 80
+                        ? "Projected strong confidence and enthusiasm throughout."
+                        : avgBodyLanguage >= 60
+                        ? "Good body language overall. Show more enthusiasm when discussing achievements."
+                        : "Work on appearing more confident and engaged during interviews."
+                }
+            };
+        }
+
+        function getDemoData() {
+            return {
+                content: { score: 85, addresses: true, examples: 5, feedback: "Strong answers with specific examples demonstrating relevant experience." },
+                audio: { score: 92, fillers: 3, filler_density: 0.6, wpm: 148, clarity: "Excellent", feedback: "Excellent speaking pace with minimal filler words." },
+                eye_contact: { score: 70, focus_percent: 70, engagement: "Good", feedback: "Maintained good camera focus." },
+                emotions: { score: 80, confidence: "High", enthusiasm: "Good", feedback: "Projected strong confidence throughout." }
+            };
+        }
 
         const grades = ['F', 'D', 'C', 'B', 'A', 'S'];
         const audioCache = {};
@@ -833,6 +1010,12 @@
 
         function initializeScorecard() {
             createParticles();
+            
+            // Load data first
+            if (!loadInterviewData()) {
+                return;
+            }
+            
             populateCategories();
             
             const boxes = document.querySelectorAll('.category-box');
@@ -846,7 +1029,7 @@
         function populateCategories() {
             document.getElementById('contentScore').textContent = scoreData.content.score;
             document.getElementById('contentAddresses').textContent = scoreData.content.addresses ? '✅ Yes' : '❌ No';
-            document.getElementById('contentExamples').textContent = scoreData.content.examples + ' examples';
+            document.getElementById('contentExamples').textContent = scoreData.content.examples + ' questions';
             document.getElementById('contentFeedback').textContent = scoreData.content.feedback;
 
             document.getElementById('audioScore').textContent = scoreData.audio.score;
@@ -944,10 +1127,8 @@
         }
 
         function showResultsPage(grade, score) {
-            // Hide performance page
             document.getElementById('performancePage').classList.add('hidden');
             
-            // Show results page
             document.getElementById('gradeLetter').textContent = grade;
             document.getElementById('overallScore').textContent = score;
             document.getElementById('gradeBadge').className = `grade-badge-large grade-${grade}`;
@@ -967,45 +1148,125 @@
             document.getElementById('resultsPage').classList.add('active');
         }
 
-        function generateInsights(score, grade) {
+        async function generateInsights(score, grade) {
             const strengths = [];
             const weaknesses = [];
-            const advice = [];
+            let advice = [];
 
+            // Rule-based strengths/weaknesses (instant)
             if (scoreData.content.score >= 80) strengths.push('Strong content relevancy - answers directly address questions');
             else if (scoreData.content.score < 60) {
                 weaknesses.push('Content could be more relevant to questions');
-                advice.push('Practice common interview questions with specific examples');
             }
 
             if (scoreData.audio.score >= 85) strengths.push('Excellent audio quality with minimal filler words');
             else if (scoreData.audio.score < 70) {
                 weaknesses.push('Too many filler words detected');
-                advice.push('Practice speaking without "um", "uh", and "like"');
             }
 
             if (scoreData.eye_contact.score >= 75) strengths.push('Good eye contact and camera engagement');
             else if (scoreData.eye_contact.score < 60) {
                 weaknesses.push('Limited eye contact with camera');
-                advice.push('Practice looking directly at the camera');
             }
 
             if (scoreData.emotions.confidence === 'High') strengths.push('Projected strong confidence throughout');
+            else if (scoreData.emotions.confidence === 'Low') {
+                weaknesses.push('Could appear more confident');
+            }
 
+            if (scoreData.emotions.enthusiasm === 'High') strengths.push('High enthusiasm and positive energy');
+
+            // Display rule-based strengths/weaknesses immediately
             document.getElementById('strengthsList').innerHTML = strengths.length > 0 
                 ? strengths.map(s => `<li><span class="insight-icon">✅</span> ${s}</li>`).join('')
-                : '<li><span class="insight-icon">💪</span> Keep practicing!</li>';
+                : '<li><span class="insight-icon">💪</span> Keep practicing - you\'ll get there!</li>';
 
             document.getElementById('weaknessesList').innerHTML = weaknesses.length > 0
                 ? weaknesses.map(w => `<li><span class="insight-icon">📈</span> ${w}</li>`).join('')
-                : '<li><span class="insight-icon">🎉</span> No major weaknesses!</li>';
+                : '<li><span class="insight-icon">🎉</span> No major weaknesses detected!</li>';
 
-            document.getElementById('adviceList').innerHTML = advice.map(a => `<li>${a}</li>`).join('');
+            // Show loading for AI advice
+            document.getElementById('adviceList').innerHTML = '<li>🤖 Generating personalized advice...</li>';
+
+            // AI-generated personalized advice (async)
+            try {
+                advice = await generatePersonalizedAdvice(scoreData, strengths, weaknesses, score, grade);
+                document.getElementById('adviceList').innerHTML = advice.map(a => `<li>${a}</li>`).join('');
+            } catch (error) {
+                console.error('AI advice generation failed:', error);
+                // Fallback to rule-based advice
+                advice = getFallbackAdvice(scoreData);
+                document.getElementById('adviceList').innerHTML = advice.map(a => `<li>${a}</li>`).join('');
+            }
+        }
+
+        async function generatePersonalizedAdvice(scores, strengths, weaknesses, overallScore, grade) {
+            try {
+                const response = await fetch('http://localhost:8000/api/feedback/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        scores: {
+                            content: scores.content.score,
+                            audio: scores.audio.score,
+                            eye_contact: scores.eye_contact.score,
+                            body_language: scores.emotions.score,
+                            overall: overallScore
+                        },
+                        grade: grade,
+                        strengths: strengths,
+                        weaknesses: weaknesses,
+                        details: {
+                            filler_words: scores.audio.fillers,
+                            wpm: scores.audio.wpm,
+                            confidence: scores.emotions.confidence,
+                            enthusiasm: scores.emotions.enthusiasm
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.advice || getFallbackAdvice(scores);
+                } else {
+                    return getFallbackAdvice(scores);
+                }
+            } catch (error) {
+                console.error('API error:', error);
+                return getFallbackAdvice(scores);
+            }
+        }
+
+        function getFallbackAdvice(scores) {
+            const advice = [];
+
+            if (scores.content.score < 75) {
+                advice.push('Practice structuring your answers using the STAR method (Situation, Task, Action, Result)');
+            }
+
+            if (scores.audio.score < 75) {
+                advice.push('Record yourself answering questions and identify filler words to eliminate');
+            }
+
+            if (scores.eye_contact.score < 70) {
+                advice.push('Place a sticky note near your camera lens to help maintain eye contact');
+            }
+
+            if (scores.emotions.score < 70) {
+                advice.push('Practice power poses before interviews to boost confidence');
+            }
+
+            if (advice.length === 0) {
+                advice.push('Excellent performance! Continue practicing to maintain consistency');
+                advice.push('Consider mentoring others or conducting mock interviews for additional experience');
+            }
+
+            return advice;
         }
 
         function playSound(grade) {
             audioCache[grade].currentTime = 0;
-            audioCache[grade].play().catch(e => console.log('Audio failed:', e));
+            audioCache[grade].play().catch(e => console.log('Audio playback failed:', e));
         }
 
         function sleep(ms) {

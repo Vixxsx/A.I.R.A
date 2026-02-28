@@ -6,20 +6,27 @@ from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 import os
 import warnings
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-warnings.filterwarnings('ignore') 
+
 import shutil
 from datetime import datetime
 
 # Import routes
 from Backend.api.video_routes import router as video_router
+from Backend.api.Question_routes import router as question_router
 from Backend.api.interview_routes import router as interview_router
+from Backend.api.feedback_routes import router as feedback_router
 
 # Import models
 from Backend.Models.whisper_stt import WhisperSTT
 from Backend.Models.filler_word_detection import FillerDetector
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+warnings.filterwarnings('ignore') 
 
+UPLOAD_DIR = "Data/Video/Raw"
+
+# Then the makedirs line will work
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 # ========== CREATE FASTAPI APP ==========
 
 app = FastAPI(
@@ -50,7 +57,6 @@ print("✅ Filler Detector loaded!")
 
 # ========== CREATE DIRECTORIES ==========
 
-UPLOAD_DIR = "temp_audio"
 TRANSCRIPT_DIR = "Data/Transcript"
 AUDIO_TEST_DIR = "Data/Audio"
 
@@ -66,7 +72,9 @@ app.include_router(video_router)
 # Interview routes
 app.include_router(interview_router)
 print("✅ Interview routes loaded")
-
+app.include_router(question_router)
+print("✅ Question routes loaded")
+app.include_router(feedback_router)
 # Auth routes - IMPORT AND INCLUDE
 try:
     from Backend.api.Auth_routes import router as auth_router

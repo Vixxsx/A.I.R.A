@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio/Video Test - AIRA</title>
+    <link rel="stylesheet" href="../Components/theme.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            padding: 30px 20px;
+        }
+
+        /* Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px,
+                transparent 1px, transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.5;
+        }
+
+        /* Grid mesh */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(1,205,254,0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(1,205,254,0.07) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        .blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+        .blob-1 { top: -120px; right: -120px; width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(240,147,251,0.14) 0%, transparent 65%); }
+        .blob-2 { bottom: -80px; left: -80px; width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(102,126,234,0.13) 0%, transparent 65%); }
+
+        /* ── MAIN CARD ── */
+        .container { max-width: 760px; width: 100%; position: relative; z-index: 10; }
+
+        .test-card {
+            background: rgba(5,1,13,0.82);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(185,103,255,0.25);
+            border-radius: var(--radius-xl);
+            padding: 36px;
+            box-shadow:
+                0 0 60px rgba(0,0,0,0.6),
+                0 0 30px rgba(185,103,255,0.08),
+                inset 0 0 40px rgba(185,103,255,0.04);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.55s ease-out both;
+        }
+
+        /* Rainbow top accent line */
+        .test-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), var(--secondary), var(--primary), var(--purple), transparent);
+            opacity: 0.7;
+        }
+
+        /* Corner glow */
+        .test-card::after {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 240px; height: 240px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(185,103,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── HEADER ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 12px; }
+
+        .user-avatar {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-display);
+            font-size: 18px; font-weight: 700;
+            color: white;
+            box-shadow: 0 0 15px rgba(255,113,206,0.4);
+        }
+
+        .user-name {
+            font-family: var(--font-display);
+            font-size: 16px; font-weight: 700;
+            color: var(--text); letter-spacing: 0.05em;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: 1px solid rgba(255,251,150,0.15);
+            color: rgba(255,251,150,0.4);
+            font-size: 20px; cursor: pointer;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+        .menu-btn:hover { color: var(--text); border-color: rgba(255,251,150,0.4); }
+
+        /* ── ERROR ── */
+        .error-message {
+            background: rgba(255,113,206,0.08);
+            border: 1px solid rgba(255,113,206,0.4);
+            color: var(--primary);
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            box-shadow: 0 0 15px rgba(255,113,206,0.1);
+        }
+        .error-message.show { display: block; }
+
+        /* ── VIDEO PREVIEW ── */
+        .video-preview {
+            position: relative;
+            width: 100%; aspect-ratio: 16/9;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid rgba(1,205,254,0.2);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 0 30px rgba(1,205,254,0.05), inset 0 0 30px rgba(0,0,0,0.4);
+        }
+
+        /* Corner brackets */
+        .vc { position: absolute; width: 18px; height: 18px; border-color: rgba(1,205,254,0.5); border-style: solid; z-index: 3; }
+        .vc.tl { top: 12px; left: 12px;   border-width: 2px 0 0 2px; }
+        .vc.tr { top: 12px; right: 12px;  border-width: 2px 2px 0 0; }
+        .vc.bl { bottom: 12px; left: 12px;  border-width: 0 0 2px 2px; }
+        .vc.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+        /* REC dot */
+        .rec-dot {
+            position: absolute; top: 14px; right: 50px;
+            display: flex; align-items: center; gap: 6px;
+            z-index: 3;
+            font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em;
+            color: rgba(255,251,150,0.5);
+        }
+        .rec-dot::before {
+            content: '';
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: recBlink 1.4s ease-in-out infinite;
+        }
+        @keyframes recBlink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+        #videoElement { width: 100%; height: 100%; object-fit: cover; }
+
+        .video-placeholder {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 12px;
+        }
+        .vp-icon {
+            font-size: 64px;
+            filter: drop-shadow(0 0 20px rgba(255,113,206,0.4));
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        @keyframes floatIcon { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+        .video-placeholder p {
+            font-family: var(--font-mono); font-size: 12px;
+            letter-spacing: 0.2em; color: rgba(255,251,150,0.35);
+            text-transform: uppercase;
+        }
+
+        /* Controls bar */
+        .controls-bar {
+            position: absolute; bottom: 18px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 12px; z-index: 4;
+        }
+        .control-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.12);
+            background: rgba(5,1,13,0.75);
+            backdrop-filter: blur(10px);
+            color: white; font-size: 18px; cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .control-btn:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(1,205,254,0.35);
+            transform: scale(1.1);
+        }
+        .control-btn.active {
+            background: rgba(255,113,206,0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(255,113,206,0.4);
+        }
+
+        /* ── STATUS ── */
+        .status-section {
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;
+        }
+        .status-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+        .status-item:hover { border-color: rgba(185,103,255,0.2); }
+
+        .status-label {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--font-mono); font-size: 12px;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: rgba(255,251,150,0.5);
+        }
+        .status-indicator {
+            width: 9px; height: 9px; border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            flex-shrink: 0; transition: all 0.4s;
+        }
+        .status-indicator.active {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+        @keyframes statusPulse { 0%,100%{opacity:1;} 50%{opacity:0.45;} }
+
+        #cameraStatusText {
+            font-family: var(--font-mono); font-size: 11px;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            color: rgba(255,251,150,0.3);
+        }
+
+        /* Audio meter */
+        .audio-meter {
+            width: 180px; height: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px; overflow: hidden;
+        }
+        .audio-level {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            transition: width 0.1s ease;
+            box-shadow: 0 0 8px rgba(5,255,161,0.4);
+            border-radius: 3px;
+        }
+
+        /* ── READY SECTION ── */
+        .ready-section {
+            text-align: center;
+            padding: 24px 0 22px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 22px;
+        }
+        .ready-title {
+            font-family: var(--font-display);
+            font-size: 22px; font-weight: 700; letter-spacing: 0.08em;
+            background: linear-gradient(90deg, var(--text), var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 10px;
+        }
+        .ready-description {
+            font-size: 14px; color: rgba(255,251,150,0.4);
+            line-height: 1.7; margin-bottom: 24px;
+        }
+        .ready-description strong {
+            color: var(--secondary); -webkit-text-fill-color: var(--secondary);
+            text-shadow: 0 0 10px rgba(1,205,254,0.4);
+        }
+
+        /* ── START BUTTON ── */
+        .start-btn {
+            padding: 15px 50px;
+            font-family: var(--font-display);
+            font-size: 14px; font-weight: 700;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            border: 2px solid var(--primary);
+            background: transparent; color: var(--primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255,113,206,0.3), inset 0 0 15px rgba(255,113,206,0.07);
+        }
+        .start-btn::before {
+            content: '';
+            position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0; border-radius: 50%;
+            background: rgba(255,113,206,0.25);
+            transform: translate(-50%,-50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        .start-btn:hover::before { width: 500px; height: 500px; }
+        .start-btn:hover {
+            color: white; background: rgba(255,113,206,0.12);
+            box-shadow: 0 0 30px rgba(255,113,206,0.65), inset 0 0 20px rgba(255,113,206,0.15);
+            transform: scale(1.02);
+        }
+        .start-btn:disabled {
+            opacity: 0.3; cursor: not-allowed;
+            transform: none; box-shadow: none;
+        }
+        .start-btn:disabled::before { display: none; }
+
+        /* ── TIPS ── */
+        .tips-section {
+            background: rgba(1,205,254,0.04);
+            border: 1px solid rgba(1,205,254,0.15);
+            border-left: 3px solid var(--secondary);
+            padding: 18px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 0 20px rgba(1,205,254,0.04);
+        }
+        .tips-title {
+            font-family: var(--font-display); font-size: 11px;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--secondary); margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tips-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+        .tips-list li {
+            font-size: 13px; color: rgba(255,251,150,0.5);
+            padding-left: 22px; position: relative; line-height: 1.6;
+        }
+        .tips-list li::before {
+            content: '✓'; position: absolute; left: 0;
+            color: var(--accent); font-weight: 700;
+            text-shadow: 0 0 8px rgba(5,255,161,0.5);
+        }
+
+        @media (max-width: 600px) {
+            .test-card { padding: 22px 16px; }
+            .audio-meter { width: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+        <div class="test-card">
+
+            <div class="header">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">V</div>
+                    <div class="user-name" id="userName">User</div>
+                </div>
+                <button class="menu-btn">⋮</button>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                ⚠️ Camera/microphone access denied. Please enable permissions to continue.
+            </div>
+
+            <div class="video-preview">
+                <div class="vc tl"></div>
+                <div class="vc tr"></div>
+                <div class="vc bl"></div>
+                <div class="vc br"></div>
+                <div class="rec-dot">LIVE</div>
+
+                <video id="videoElement" autoplay muted></video>
+
+                <div class="video-placeholder" id="videoPlaceholder">
+                    <div class="vp-icon">📹</div>
+                    <p>Camera initializing…</p>
+                </div>
+
+                <div class="controls-bar">
+                    <button class="control-btn" id="micBtn"      title="Toggle Microphone">🎤</button>
+                    <button class="control-btn" id="cameraBtn"   title="Toggle Camera">📹</button>
+                    <button class="control-btn" id="settingsBtn" title="Settings">⚙️</button>
+                </div>
+            </div>
+
+            <div class="status-section">
+                <div class="status-item">
+                    <div class="status-label">
+                        <span class="status-indicator" id="cameraStatus"></span>
+                        Camera
+                    </div>
+                    <span id="cameraStatusText">Not detected</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">
+                        <span class="status-indicator" id="micStatus"></span>
+                        Microphone
+                    </div>
+                    <div class="audio-meter">
+                        <div class="audio-level" id="audioLevel"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ready-section">
+                <h2 class="ready-title">Ready to Start?</h2>
+                <p class="ready-description">
+                    Make sure your camera and microphone are working properly.<br>
+                    You'll be answering <strong id="questionCount">5</strong> interview questions.
+                </p>
+                <button class="start-btn" id="startInterviewBtn" disabled>
+                    Start Interview
+                </button>
+            </div>
+
+            <div class="tips-section">
+                <div class="tips-title">💡 Tips for Success</div>
+                <ul class="tips-list">
+                    <li>Ensure you're in a quiet, well-lit environment</li>
+                    <li>Look directly at the camera while answering</li>
+                    <li>Speak clearly and at a moderate pace</li>
+                    <li>Take a moment to think before answering</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let stream = null, audioContext = null, analyser = null;
+        let micEnabled = true, cameraEnabled = true;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const username = localStorage.getItem('aira_user') || sessionStorage.getItem('aira_user') || 'User';
+            document.getElementById('userName').textContent = username;
+            document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+
+            const settings = JSON.parse(sessionStorage.getItem('interviewPreferences') || '{}');
+            if (settings.numQuestions) document.getElementById('questionCount').textContent = settings.numQuestions;
+
+            initializeMedia();
+        });
+
+        async function initializeMedia() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: true
+                });
+                const vid = document.getElementById('videoElement');
+                vid.srcObject = stream;
+                document.getElementById('videoPlaceholder').style.display = 'none';
+                document.getElementById('cameraStatus').classList.add('active');
+                document.getElementById('micStatus').classList.add('active');
+                document.getElementById('cameraStatusText').textContent = 'Working';
+                document.getElementById('startInterviewBtn').disabled = false;
+                setupAudioVisualization();
+            } catch (err) {
+                document.getElementById('errorMessage').classList.add('show');
+                document.getElementById('cameraStatusText').textContent = 'Access denied';
+            }
+        }
+
+        function setupAudioVisualization() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            audioContext.createMediaStreamSource(stream).connect(analyser);
+            analyser.fftSize = 256;
+            const data = new Uint8Array(analyser.frequencyBinCount);
+            (function tick() {
+                analyser.getByteFrequencyData(data);
+                const avg = data.reduce((a,b) => a+b) / data.length;
+                document.getElementById('audioLevel').style.width = (avg / 255 * 100) + '%';
+                requestAnimationFrame(tick);
+            })();
+        }
+
+        document.getElementById('micBtn').addEventListener('click', () => {
+            micEnabled = !micEnabled;
+            stream.getAudioTracks().forEach(t => t.enabled = micEnabled);
+            const btn = document.getElementById('micBtn');
+            btn.classList.toggle('active', !micEnabled);
+            btn.textContent = micEnabled ? '🎤' : '🔇';
+        });
+
+        document.getElementById('cameraBtn').addEventListener('click', () => {
+            cameraEnabled = !cameraEnabled;
+            stream.getVideoTracks().forEach(t => t.enabled = cameraEnabled);
+            const btn = document.getElementById('cameraBtn');
+            btn.classList.toggle('active', !cameraEnabled);
+            btn.textContent = cameraEnabled ? '📹' : '🚫';
+            document.getElementById('videoPlaceholder').style.display = cameraEnabled ? 'none' : 'flex';
+        });
+
+        document.getElementById('startInterviewBtn').addEventListener('click', () => {
+            sessionStorage.setItem('mediaReady', 'true');
+            window.location.href = 'interview.html';
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            if (audioContext) audioContext.close();
+        });
+    </script>
+</body>
+</html>

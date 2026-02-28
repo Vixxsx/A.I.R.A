@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Session - AIRA</title>
+    <link rel="stylesheet" href="../Components/theme.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* Scanlines */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px,
+                transparent 1px, transparent 2px
+            );
+            pointer-events: none;
+            z-index: 997; opacity: 0.5;
+        }
+
+        /* Grid mesh */
+        body::after {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(1,205,254,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(1,205,254,0.06) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none; z-index: 996;
+        }
+
+        /* ── HEADER ── */
+        .header {
+            padding: 16px 40px;
+            background: rgba(20,5,40,0.82);
+            backdrop-filter: blur(16px);
+            position: relative; z-index: 100;
+            border-bottom: 1px solid transparent;
+            border-image: linear-gradient(90deg, transparent, rgba(185,103,255,0.5), rgba(255,113,206,0.5), rgba(1,205,254,0.4), transparent) 1;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .interview-title {
+            font-family: var(--font-display);
+            font-size: 18px; font-weight: 700;
+            letter-spacing: 0.08em;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(255,113,206,0.4));
+        }
+
+        .question-progress {
+            font-family: var(--font-mono);
+            font-size: 13px; letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: rgba(255,251,150,0.45);
+        }
+
+        .progress-bar-container {
+            width: 100%; height: 3px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 2px; overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--purple), var(--primary), var(--secondary));
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(255,113,206,0.5);
+        }
+
+        /* ── MAIN ── */
+        .main-content {
+            display: flex;
+            height: calc(100vh - 88px);
+            padding: 28px 40px;
+            gap: 20px;
+            position: relative; z-index: 10;
+        }
+
+        .question-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        /* ── TIMER ── */
+        .timer {
+            position: absolute;
+            top: 0; left: 0;
+            font-family: var(--font-mono);
+            font-size: 44px; font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--text);
+            text-shadow: 0 0 20px rgba(255,251,150,0.3);
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+            line-height: 1;
+        }
+        .timer.warning {
+            color: var(--sun);
+            text-shadow: 0 0 20px rgba(249,212,35,0.6);
+        }
+        .timer.danger {
+            color: var(--primary);
+            text-shadow: 0 0 25px rgba(255,113,206,0.8);
+            animation: timerPulse 0.9s ease-in-out infinite;
+        }
+        @keyframes timerPulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.7; transform: scale(1.04); }
+        }
+
+        /* ── VIDEO PREVIEW ── */
+        .video-preview {
+            position: absolute;
+            top: 0; right: 0;
+            width: 230px;
+            aspect-ratio: 16/9;
+            background: rgba(0,0,0,0.7);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid rgba(1,205,254,0.25);
+            box-shadow: 0 0 20px rgba(1,205,254,0.08), 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Corner brackets on video */
+        .video-preview .vc {
+            position: absolute; width: 12px; height: 12px;
+            border-color: rgba(1,205,254,0.6); border-style: solid; z-index: 3;
+        }
+        .video-preview .vc.tl { top: 7px; left: 7px;   border-width: 1.5px 0 0 1.5px; }
+        .video-preview .vc.tr { top: 7px; right: 7px;  border-width: 1.5px 1.5px 0 0; }
+        .video-preview .vc.bl { bottom: 7px; left: 7px;  border-width: 0 0 1.5px 1.5px; }
+        .video-preview .vc.br { bottom: 7px; right: 7px; border-width: 0 1.5px 1.5px 0; }
+
+        #videoElement { width: 100%; height: 100%; object-fit: cover; }
+
+        .recording-indicator {
+            position: absolute;
+            top: 8px; left: 8px;
+            background: rgba(255,113,206,0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: var(--font-mono);
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.15em;
+            display: none; align-items: center; gap: 5px;
+            z-index: 4;
+            box-shadow: 0 0 10px rgba(255,113,206,0.3);
+        }
+        .recording-indicator.active { display: flex; }
+
+        .rec-dot {
+            width: 7px; height: 7px;
+            background: var(--primary); border-radius: 50%;
+            box-shadow: 0 0 6px var(--primary);
+            animation: recBlink 1s ease-in-out infinite;
+        }
+        @keyframes recBlink { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+        /* ── QUESTION DISPLAY ── */
+        .question-display {
+            max-width: 750px;
+            padding: 40px;
+            position: relative;
+        }
+
+        /* Decorative card behind question */
+        .question-display::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: rgba(5,1,13,0.55);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(185,103,255,0.18);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 0 40px rgba(185,103,255,0.06), inset 0 0 30px rgba(185,103,255,0.03);
+        }
+        /* Top accent line on card */
+        .question-display::after {
+            content: '';
+            position: absolute; top: 0; left: 10%; right: 10%; height: 1.5px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+            border-radius: 2px; opacity: 0.5;
+        }
+
+        .question-number {
+            position: relative; z-index: 1;
+            font-family: var(--font-mono);
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.35em;
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(5,255,161,0.5);
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            position: relative; z-index: 1;
+            font-family: var(--font-display);
+            font-size: 28px; line-height: 1.55;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+        }
+
+        /* ── CONTROLS ── */
+        .controls {
+            display: flex; gap: 14px;
+            justify-content: center;
+            margin-top: 36px;
+            position: relative; z-index: 1;
+        }
+
+        .control-button {
+            font-family: var(--font-display);
+            font-size: 13px; font-weight: 700;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            padding: 13px 32px;
+            border: 2px solid;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            position: relative; overflow: hidden;
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .control-button.show { display: inline-block; }
+
+        .control-button::before {
+            content: '';
+            position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0; border-radius: 50%;
+            transform: translate(-50%,-50%);
+            transition: width 0.5s, height 0.5s;
+        }
+        .control-button:hover::before { width: 400px; height: 400px; }
+        .control-button:hover { transform: translateY(-2px); }
+
+        .stop-btn {
+            background: transparent; color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(255,113,206,0.25), inset 0 0 12px rgba(255,113,206,0.06);
+        }
+        .stop-btn::before { background: rgba(255,113,206,0.2); }
+        .stop-btn:hover {
+            box-shadow: 0 0 25px rgba(255,113,206,0.6), inset 0 0 20px rgba(255,113,206,0.15);
+            color: white;
+        }
+
+        .next-btn {
+            background: transparent; color: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 12px rgba(1,205,254,0.25), inset 0 0 12px rgba(1,205,254,0.06);
+        }
+        .next-btn::before { background: rgba(1,205,254,0.2); }
+        .next-btn:hover {
+            box-shadow: 0 0 25px rgba(1,205,254,0.6), inset 0 0 20px rgba(1,205,254,0.15);
+            color: white;
+        }
+
+        /* ── COUNTDOWN ── */
+        .countdown-container {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: none; z-index: 500;
+            flex-direction: column; align-items: center;
+        }
+        .countdown-container.active { display: flex; }
+
+        .countdown-circle {
+            position: relative;
+            width: 220px; height: 220px;
+        }
+
+        /* Outer ring */
+        .cd-ring-outer {
+            position: absolute; inset: 0;
+            animation: cdSpinCW 3s linear infinite;
+        }
+        .cd-ring-inner {
+            position: absolute; inset: 16px;
+            animation: cdSpinCCW 2s linear infinite;
+        }
+        @keyframes cdSpinCW  { to { transform: rotate(360deg); } }
+        @keyframes cdSpinCCW { to { transform: rotate(-360deg); } }
+
+        .countdown-number {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-display);
+            font-size: 100px; font-weight: 900;
+            background: linear-gradient(180deg, var(--text) 0%, var(--primary) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(255,113,206,0.8));
+            animation: numBounce 0.5s cubic-bezier(0.68,-0.55,0.265,1.55);
+        }
+        @keyframes numBounce {
+            0%   { transform: translate(-50%,-50%) scale(0.2); opacity: 0; }
+            60%  { transform: translate(-50%,-50%) scale(1.15); }
+            100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+        }
+
+        .countdown-text {
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 13px; letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(1,205,254,0.7);
+            animation: textFade 0.4s ease;
+        }
+        @keyframes textFade {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── ANALYZING OVERLAY ── */
+        .loading-overlay {
+            position: fixed; inset: 0;
+            background:
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(0,0,0,0.2) 1px, transparent 1px, transparent 2px),
+                linear-gradient(160deg, rgba(30,5,60,0.97), rgba(5,1,13,0.98));
+            display: none; align-items: center; justify-content: center;
+            flex-direction: column; gap: 0;
+            z-index: 1000;
+        }
+        .loading-overlay::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(185,103,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(185,103,255,0.05) 1px, transparent 1px);
+            background-size: 44px 44px;
+            pointer-events: none;
+        }
+        .loading-overlay.active { display: flex; }
+
+        /* Corner brackets */
+        .lo-corner {
+            position: absolute; width: 22px; height: 22px;
+            border-color: rgba(185,103,255,0.4); border-style: solid;
+        }
+        .lo-corner.tl { top: 28px; left: 28px;   border-width: 2px 0 0 2px; }
+        .lo-corner.tr { top: 28px; right: 28px;  border-width: 2px 2px 0 0; }
+        .lo-corner.bl { bottom: 28px; left: 28px;  border-width: 0 0 2px 2px; }
+        .lo-corner.br { bottom: 28px; right: 28px; border-width: 0 2px 2px 0; }
+
+        /* Scanning line */
+        .lo-scan {
+            position: absolute; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent 0%, rgba(1,205,254,0.7) 50%, transparent 100%);
+            animation: globalScan 2s ease-in-out infinite;
+            box-shadow: 0 0 12px rgba(1,205,254,0.4);
+        }
+        @keyframes globalScan {
+            0%   { top: 0%;   opacity: 0; }
+            5%   { opacity: 1; }
+            95%  { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Dual-ring spinner */
+        .lo-rings {
+            position: relative; width: 140px; height: 140px;
+            margin-bottom: 30px;
+        }
+        .lo-rings svg {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+        }
+        .lo-spin-cw  { animation: spinCW  2.5s linear infinite; transform-origin: 70px 70px; }
+        .lo-spin-ccw { animation: spinCCW 1.8s linear infinite; transform-origin: 70px 70px; }
+        @keyframes spinCW  { to { transform: rotate(360deg); } }
+        @keyframes spinCCW { to { transform: rotate(-360deg); } }
+
+        .lo-hex-inner {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 38px;
+            animation: hexPulse 1.4s ease-in-out infinite;
+            filter: drop-shadow(0 0 16px rgba(1,205,254,0.9));
+        }
+        @keyframes hexPulse {
+            0%,100% { transform: scale(1); opacity: 1; }
+            50%      { transform: scale(1.12); opacity: 0.7; }
+        }
+
+        .lo-title {
+            font-family: var(--font-display);
+            font-size: 19px; font-weight: 700;
+            letter-spacing: 0.18em; text-transform: uppercase;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 12px rgba(1,205,254,0.4));
+        }
+
+        .lo-sub {
+            font-family: var(--font-mono);
+            font-size: 10px; letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: rgba(255,113,206,0.6);
+            animation: subBlink 1.2s step-start infinite;
+            margin-bottom: 22px;
+        }
+        @keyframes subBlink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+        .lo-bar-track {
+            width: 220px; height: 2px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 2px; overflow: hidden;
+        }
+        .lo-bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--purple), var(--secondary), var(--primary));
+            box-shadow: 0 0 10px rgba(1,205,254,0.5);
+            border-radius: 2px;
+            animation: analyzeBar 3s cubic-bezier(0.4,0,0.2,1) forwards;
+        }
+        @keyframes analyzeBar {
+            0%  { width: 0%; }
+            20% { width: 25%; }
+            50% { width: 58%; }
+            80% { width: 82%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="interview-title">◈ AIRA Interview</div>
+            <div class="question-progress" id="questionProgress">Question 1 of 5</div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="question-section">
+
+            <!-- Timer top-left -->
+            <div class="timer" id="timer">2:00</div>
+
+            <!-- Video preview top-right -->
+            <div class="video-preview">
+                <div class="vc tl"></div>
+                <div class="vc tr"></div>
+                <div class="vc bl"></div>
+                <div class="vc br"></div>
+                <video id="videoElement" autoplay muted></video>
+                <div class="recording-indicator" id="recordingIndicator">
+                    <div class="rec-dot"></div>
+                    REC
+                </div>
+            </div>
+
+            <!-- Question -->
+            <div class="question-display">
+                <div class="question-number" id="questionNumber">Question 1</div>
+                <div class="question-text" id="questionText">Loading question…</div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="control-button stop-btn" id="stopBtn">⏹ Stop Early</button>
+                <button class="control-button next-btn" id="nextBtn">Next Question →</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Countdown (no dim overlay) -->
+    <div class="countdown-container" id="countdownContainer">
+        <div class="countdown-circle">
+            <!-- Outer ring CW -->
+            <svg viewBox="0 0 220 220" class="cd-ring-outer" style="position:absolute;inset:0;width:100%;height:100%">
+                <defs>
+                    <linearGradient id="cdg1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#FF71CE" stop-opacity="0.15"/>
+                        <stop offset="100%" stop-color="#B967FF"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(185,103,255,0.12)" stroke-width="2"/>
+                <circle cx="110" cy="110" r="100" fill="none" stroke="url(#cdg1)" stroke-width="2"
+                    stroke-linecap="round" stroke-dasharray="400" stroke-dashoffset="120"/>
+            </svg>
+            <!-- Inner ring CCW -->
+            <svg viewBox="0 0 220 220" class="cd-ring-inner" style="position:absolute;inset:0;width:100%;height:100%">
+                <defs>
+                    <linearGradient id="cdg2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#01CDFE" stop-opacity="0.15"/>
+                        <stop offset="100%" stop-color="#01CDFE"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="110" cy="110" r="84" fill="none" stroke="rgba(1,205,254,0.08)" stroke-width="1.5"/>
+                <circle cx="110" cy="110" r="84" fill="none" stroke="url(#cdg2)" stroke-width="1.5"
+                    stroke-linecap="round" stroke-dasharray="340" stroke-dashoffset="230"/>
+            </svg>
+            <div class="countdown-number" id="countdownNumber">5</div>
+        </div>
+        <div class="countdown-text" id="countdownText">Get ready to answer!</div>
+    </div>
+
+    <!-- Analyzing Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="lo-corner tl"></div>
+        <div class="lo-corner tr"></div>
+        <div class="lo-corner bl"></div>
+        <div class="lo-corner br"></div>
+        <div class="lo-scan"></div>
+
+        <div class="lo-rings">
+            <svg viewBox="0 0 140 140" class="lo-spin-cw">
+                <defs>
+                    <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#B967FF" stop-opacity="0.1"/>
+                        <stop offset="100%" stop-color="#01CDFE"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="70" cy="70" r="62" fill="none" stroke="rgba(185,103,255,0.1)" stroke-width="2"/>
+                <circle cx="70" cy="70" r="62" fill="none" stroke="url(#lg1)" stroke-width="2"
+                    stroke-linecap="round" stroke-dasharray="260" stroke-dashoffset="70"/>
+            </svg>
+            <svg viewBox="0 0 140 140" class="lo-spin-ccw" style="position:absolute;inset:0">
+                <defs>
+                    <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#FF71CE" stop-opacity="0.1"/>
+                        <stop offset="100%" stop-color="#FF71CE"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="70" cy="70" r="48" fill="none" stroke="rgba(1,205,254,0.07)" stroke-width="1.5"/>
+                <circle cx="70" cy="70" r="48" fill="none" stroke="url(#lg2)" stroke-width="1.5"
+                    stroke-linecap="round" stroke-dasharray="200" stroke-dashoffset="140"/>
+            </svg>
+            <div class="lo-hex-inner">◈</div>
+        </div>
+
+        <div class="lo-title">Analyzing Answer</div>
+        <div class="lo-sub" id="loadingText">Processing audio…</div>
+        <div class="lo-bar-track">
+            <div class="lo-bar-fill" id="loBar"></div>
+        </div>
+    </div>
+
+    <script src="../Assets/interview.js"></script>
+</body>
+</html>

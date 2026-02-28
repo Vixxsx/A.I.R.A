@@ -36,21 +36,6 @@
 │  └─ Video
 │     ├─ Frames
 │     │  └─ test_extraction
-│     │     ├─ frame_000000.jpg
-│     │     ├─ frame_000010.jpg
-│     │     ├─ frame_000020.jpg
-│     │     ├─ frame_000030.jpg
-│     │     ├─ frame_000040.jpg
-│     │     ├─ frame_000050.jpg
-│     │     ├─ frame_000060.jpg
-│     │     ├─ frame_000070.jpg
-│     │     ├─ frame_000080.jpg
-│     │     ├─ frame_000090.jpg
-│     │     ├─ frame_000100.jpg
-│     │     ├─ frame_000110.jpg
-│     │     ├─ frame_000120.jpg
-│     │     ├─ frame_000130.jpg
-│     │     └─ frame_000140.jpg
 │     ├─ Processed
 │     ├─ Raw
 │     │  ├─ test_video.mp4
@@ -78,6 +63,5 @@
 ├─ main.py
 ├─ README.md
 ├─ requirements.txt
-└─ users.db
 
 ```
