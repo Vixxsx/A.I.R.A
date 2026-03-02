@@ -95,7 +95,7 @@ Automated Interview Feedback Analyzer/
 │   │   └── F.mp3, D.mp3, C.mp3, B.mp3, A.mp3, S.mp3 (JSR combo sounds)
 │   │
 │   └── Components/
-│       └── style.css
+│       └── theme.css
 │
 └── main.py (root - FastAPI server)
 ```
@@ -266,14 +266,6 @@ Automated Interview Feedback Analyzer/
 3. **MoviePy/Audio Extraction:**
    - May need FFmpeg installed system-wide
    - Alternative: Using subprocess with FFmpeg
-
-4. **Temp Audio Folder:**
-   - Currently saves to `temp_audio/`
-   - Should use `Data/Audio/` instead
-   - Minor issue, doesn't affect functionality
-
----
-
 ## 📋 REMAINING WORK
 
 ### **Week 5 (Current - Days 1-7):**
