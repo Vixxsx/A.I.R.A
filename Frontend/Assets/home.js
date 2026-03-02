@@ -75,30 +75,66 @@ function setupFormHandler() {
 // ════════════════════════════════
 //  INTERVIEW HISTORY
 // ════════════════════════════════
-function loadInterviewHistory() {
+async function loadInterviewHistory() {
+    const username = getCurrentUser();
     const section = document.getElementById('historySection');
-
-    // Pull all saved results from sessionStorage + localStorage
-    const history = getInterviewHistory();
-
-    if (!history || history.length === 0) {
-        section.innerHTML = `
-            <div style="
-                text-align:center; padding:40px 20px;
-                color:rgba(255,251,150,0.3);
-                border:1px dashed rgba(185,103,255,0.2);
-                border-radius:12px;
-            ">
-                <div style="font-size:48px; margin-bottom:16px;">🎯</div>
-                <p style="font-size:14px; margin-bottom:6px;">No interviews yet</p>
-                <p style="font-size:12px; opacity:0.6;">Complete your first interview to see results here</p>
-            </div>`;
+    
+    if (!username) {
+        section.innerHTML = '<p>Please log in to view history</p>';
         return;
     }
+    
+    try {
+        const response = await fetch(`http://localhost:8000/api/interviews/recent?username=${username}&limit=5`);
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.interviews && data.interviews.length > 0) {
+                section.innerHTML = data.interviews.map(buildHistoryCard).join('');
+            } else {
+                section.innerHTML = `
+                    <div style="text-align:center; padding:40px; color:rgba(255,251,150,0.3);">
+                        <div style="font-size:48px; margin-bottom:16px;">🎯</div>
+                        <p>No interviews yet</p>
+                    </div>`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+        section.innerHTML = '<p>Unable to load history</p>';
+    }
+}
 
-    // Show latest 5
-    const latest = history.slice(-5).reverse();
-    section.innerHTML = latest.map(entry => buildHistoryCard(entry)).join('');
+function buildHistoryCard(interview) {
+    const GRADE_COLOURS = {
+        S: 'linear-gradient(135deg,#fbe238,#f49829)',
+        A: 'linear-gradient(135deg,#05FFA1,#01CDFE)',
+        B: 'linear-gradient(135deg,#01CDFE,#B967FF)',
+        C: 'linear-gradient(135deg,#FFFB96,#f49829)',
+        D: 'linear-gradient(135deg,#f49829,#FF71CE)',
+        F: 'linear-gradient(135deg,#FF71CE,#764ba2)',
+    };
+    
+    const date = new Date(interview.timestamp).toLocaleDateString('en-US', { 
+        month:'short', day:'numeric', year:'numeric' 
+    });
+    
+    return `
+    <div class="history-card">
+        <div class="history-grade" style="background: ${GRADE_COLOURS[interview.grade]}">
+            ${interview.grade}
+        </div>
+        <div class="history-info">
+            <div class="history-role">${interview.job_role}</div>
+            <div class="history-date">
+                <span>📅 ${date}</span>
+            </div>
+        </div>
+        <div class="history-score">
+            <div class="score-value">${interview.overall_score}</div>
+            <div class="score-label">/ 100</div>
+        </div>
+    </div>`;
 }
 
 function getInterviewHistory() {

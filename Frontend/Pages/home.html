@@ -561,34 +561,6 @@
 
     <div class="container">
         <div class="setup-card">
-            <!-- Previous Interviews Section -->
-<div class="history-container" style="margin-top: 40px;">
-    <div class="history-header">
-        <h2 style="
-            font-family: var(--font-display);
-            font-size: 20px;
-            letter-spacing: 0.05em;
-            background: linear-gradient(90deg, var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-        ">📊 Recent Interviews</h2>
-        <p style="
-            font-size: 13px;
-            color: rgba(255, 251, 150, 0.4);
-            margin-bottom: 20px;
-        ">Your last 5 interview performances</p>
-    </div>
-    
-    <div id="historySection" class="history-grid">
-        <!-- History cards will be inserted here by JavaScript -->
-        <div style="text-align: center; padding: 40px; color: rgba(255, 251, 150, 0.3);">
-            <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
-            <p style="font-size: 14px;">Loading interview history...</p>
-        </div>
-    </div>
-</div>
             <div class="setup-header">
                 <h1>⚡ Setup Your Interview</h1>
                 <p>Configure your preferences and let AIRA's AI guide your performance analysis</p>
@@ -629,7 +601,33 @@
                     <button type="submit" class="start-btn">🚀 Start Interview</button>
                 </div>
             </form>
-
+            <div class="history-container" style="margin-top: 40px;">
+    <div class="history-header">
+        <h2 style="
+            font-family: var(--font-display);
+            font-size: 20px;
+            letter-spacing: 0.05em;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        ">📊 Recent Interviews</h2>
+        <p style="
+            font-size: 13px;
+            color: rgba(255, 251, 150, 0.4);
+            margin-bottom: 20px;
+        ">Your last 5 interview performances</p>
+    </div>
+    
+    <div id="historySection" class="history-grid">
+        <!-- History cards will be inserted here by JavaScript -->
+        <div style="text-align: center; padding: 40px; color: rgba(255, 251, 150, 0.3);">
+            <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+            <p style="font-size: 14px;">Loading interview history...</p>
+        </div>
+    </div>
+</div>
             <div id="message" class="message"></div>
         </div>
     </div>
