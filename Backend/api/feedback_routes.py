@@ -1,8 +1,3 @@
-"""
-Feedback Generation Routes
-Uses Grok API to generate personalized interview feedback
-"""
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
@@ -15,22 +10,18 @@ load_dotenv()
 
 router = APIRouter(prefix="/api/feedback", tags=["feedback"])
 
-# Initialize Grok client
-api_key = os.getenv('GROK_API_KEY')
+api_key = os.getenv('OPENAI_API_KEY')
 if api_key:
     try:
-        client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.x.ai/v1"
-        )
+        client = OpenAI(api_key=api_key)  # standard OpenAI, no base_url needed
         use_ai = True
-        print("✅ Grok API initialized for feedback generation")
+        print("✅ OpenAI (gpt-4o-mini) initialized for feedback generation")
     except Exception as e:
-        print(f"⚠️  Grok API unavailable: {e}")
+        print(f"⚠️  OpenAI API unavailable: {e}")
         client = None
         use_ai = False
 else:
-    print("⚠️  GROK_API_KEY not found - using rule-based feedback")
+    print("⚠️  OPENAI_API_KEY not found - using rule-based feedback")
     client = None
     use_ai = False
 
@@ -89,7 +80,6 @@ async def generate_personalized_feedback(request: FeedbackRequest):
 
 
 def generate_with_grok(request: FeedbackRequest) -> List[str]:
-    """Generate personalized advice using Grok API"""
     
     # Build context
     strengths_text = "\n".join(f"- {s}" for s in request.strengths) if request.strengths else "None identified"
@@ -132,7 +122,7 @@ No preamble, no explanation, just the JSON array."""
 
     try:
         response = client.chat.completions.create(
-            model="grok-2-1212",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",

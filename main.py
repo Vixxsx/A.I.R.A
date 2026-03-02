@@ -11,10 +11,11 @@ import shutil
 from datetime import datetime
 
 # Import routes
-from Backend.api.video_routes import router as video_router
+from Backend.api.Video_routes import router as video_router
 from Backend.api.Question_routes import router as question_router
-from Backend.api.interview_routes import router as interview_router
-from Backend.api.feedback_routes import router as feedback_router
+from Backend.api.Interview_routes import router as interview_router
+from Backend.api.Feedback_routes import router as feedback_router
+from Backend.api.History_routes import router as history_router
 
 # Import models
 from Backend.Models.whisper_stt import WhisperSTT
@@ -75,6 +76,9 @@ print("✅ Interview routes loaded")
 app.include_router(question_router)
 print("✅ Question routes loaded")
 app.include_router(feedback_router)
+print("✅ Feedback routes loaded")
+app.include_router(history_router)
+print("✅ History routes loaded")
 # Auth routes - IMPORT AND INCLUDE
 try:
     from Backend.api.Auth_routes import router as auth_router

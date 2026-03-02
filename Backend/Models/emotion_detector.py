@@ -6,7 +6,6 @@ from deepface import DeepFace
 class EmotionDetector:
     def __init__(self):
         """Initialize DeepFace emotion detector"""
-        # DeepFace's 7 basic emotions
         self.basic_emotions = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
         
         # Interview-relevant emotion categories
@@ -17,16 +16,48 @@ class EmotionDetector:
             'composed': ['neutral'],
             'engaged': ['happy', 'surprise', 'neutral']
         }
+
+        # ── FIX: Minimum confidence for a non-neutral emotion to be accepted ──
+        # If the dominant emotion's raw score is below this, we override to "neutral"
+        # DeepFace returns 0-100 percentage values per emotion
+        self.DOMINANCE_THRESHOLD = 40   # dominant emotion must have ≥40% confidence
+        self.NEUTRAL_FALLBACK    = True  # enable the fallback
         
         print("✅ Emotion Detector initialized (DeepFace - Interview Mode)")
     
     
+    def _resolve_dominant(self, emotions: Dict[str, float]) -> str:
+        """
+        Return the true dominant emotion with a confidence gate.
+        
+        DeepFace spreads probability across 7 classes. On a neutral/dull face
+        the scores might look like: neutral=28, angry=22, happy=18 …
+        The raw 'dominant_emotion' would say "neutral" here — but often
+        the model gets confused and picks "angry" at 24% vs neutral at 22%.
+        
+        Fix: if the winning emotion isn't "neutral" AND its score is below
+        DOMINANCE_THRESHOLD, override to "neutral".
+        """
+        dominant = max(emotions, key=emotions.get)
+        dominant_score = emotions[dominant]
+
+        if self.NEUTRAL_FALLBACK and dominant != 'neutral':
+            # Only accept non-neutral if it's clearly dominant
+            if dominant_score < self.DOMINANCE_THRESHOLD:
+                return 'neutral'
+            
+            # Extra check: if neutral is close behind, prefer neutral
+            neutral_score = emotions.get('neutral', 0)
+            if dominant_score - neutral_score < 10:
+                return 'neutral'
+
+        return dominant
+
+
     def analyze_frame(self, frame: np.ndarray) -> Dict:
         try:
-            # DeepFace expects RGB
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             
-            # Analyze emotions
             result = DeepFace.analyze(
                 rgb_frame,
                 actions=['emotion'],
@@ -35,14 +66,14 @@ class EmotionDetector:
                 silent=True
             )
             
-            # Handle both single face and multiple faces
             if isinstance(result, list):
                 result = result[0]
             
             emotions = result['emotion']
-            dominant_emotion = result['dominant_emotion']
+
+            # ── FIX: Use our gated dominant resolver instead of DeepFace's raw value ──
+            dominant_emotion = self._resolve_dominant(emotions)
             
-            # Calculate interview-relevant scores
             interview_assessment = self._assess_for_interview(emotions)
             
             return {
@@ -71,23 +102,19 @@ class EmotionDetector:
     
     def _assess_for_interview(self, emotions: Dict[str, float]) -> Dict:
         """
-        Translate DeepFace emotions into interview-relevant assessment
-        
-        Returns interview-specific scores and impressions
+        Translate DeepFace emotions into interview-relevant assessment.
+        Uses raw emotion scores (not the gated dominant) for composite scoring.
         """
-        # Calculate composite scores
-        confidence_score = emotions.get('happy', 0) * 0.6 + emotions.get('neutral', 0) * 0.4
-        enthusiasm_score = emotions.get('happy', 0) * 0.7 + emotions.get('surprise', 0) * 0.3
-        nervousness_score = emotions.get('fear', 0) * 0.6 + emotions.get('sad', 0) * 0.4
+        confidence_score    = emotions.get('happy', 0) * 0.6  + emotions.get('neutral', 0) * 0.4
+        enthusiasm_score    = emotions.get('happy', 0) * 0.7  + emotions.get('surprise', 0) * 0.3
+        nervousness_score   = emotions.get('fear',  0) * 0.6  + emotions.get('sad', 0) * 0.4
         professionalism_score = emotions.get('neutral', 0)
         
-        # Binary assessments (for easy interpretation)
-        appears_confident = confidence_score > 35
-        appears_enthusiastic = enthusiasm_score > 30
-        appears_nervous = nervousness_score > 25
+        appears_confident    = confidence_score    > 35
+        appears_enthusiastic = enthusiasm_score    > 30
+        appears_nervous      = nervousness_score   > 25
         appears_professional = professionalism_score > 40
         
-        # Overall impression
         if appears_enthusiastic and appears_confident:
             overall = "Very positive - enthusiastic and confident"
         elif appears_confident and appears_professional:
@@ -104,15 +131,15 @@ class EmotionDetector:
             overall = "Balanced emotional expression"
         
         return {
-            "confidence_score": round(confidence_score, 1),
-            "enthusiasm_score": round(enthusiasm_score, 1),
-            "nervousness_score": round(nervousness_score, 1),
-            "professionalism_score": round(professionalism_score, 1),
-            "appears_confident": appears_confident,
-            "appears_enthusiastic": appears_enthusiastic,
-            "appears_nervous": appears_nervous,
-            "appears_professional": appears_professional,
-            "overall_impression": overall
+            "confidence_score":       round(confidence_score, 1),
+            "enthusiasm_score":       round(enthusiasm_score, 1),
+            "nervousness_score":      round(nervousness_score, 1),
+            "professionalism_score":  round(professionalism_score, 1),
+            "appears_confident":      appears_confident,
+            "appears_enthusiastic":   appears_enthusiastic,
+            "appears_nervous":        appears_nervous,
+            "appears_professional":   appears_professional,
+            "overall_impression":     overall
         }
     
     
@@ -123,11 +150,11 @@ class EmotionDetector:
         if not cap.isOpened():
             raise Exception(f"Cannot open video: {video_path}")
         
-        fps = cap.get(cv2.CAP_PROP_FPS)
+        fps          = cap.get(cv2.CAP_PROP_FPS)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         
-        frame_results = []
-        frame_count = 0
+        frame_results  = []
+        frame_count    = 0
         analyzed_count = 0
         
         print(f"😊 Analyzing emotions: {video_path}")
@@ -136,14 +163,13 @@ class EmotionDetector:
         try:
             while True:
                 ret, frame = cap.read()
-                
                 if not ret:
                     break
                 
                 if frame_count % sample_rate == 0:
                     result = self.analyze_frame(frame)
                     result['frame_number'] = frame_count
-                    result['timestamp'] = frame_count / fps
+                    result['timestamp']    = frame_count / fps
                     frame_results.append(result)
                     analyzed_count += 1
                     
@@ -154,19 +180,17 @@ class EmotionDetector:
                 frame_count += 1
             
             print(f"✅ Analyzed {analyzed_count} frames")
-            
-            # Calculate summary
             summary = self._calculate_interview_summary(frame_results)
             
             return {
-                "success": True,
-                "video_path": video_path,
-                "total_frames": total_frames,
-                "analyzed_frames": analyzed_count,
-                "fps": fps,
+                "success":          True,
+                "video_path":       video_path,
+                "total_frames":     total_frames,
+                "analyzed_frames":  analyzed_count,
+                "fps":              fps,
                 "duration_seconds": total_frames / fps,
-                "frame_results": frame_results,
-                "summary": summary
+                "frame_results":    frame_results,
+                "summary":          summary
             }
         
         finally:
@@ -188,15 +212,13 @@ class EmotionDetector:
                 print(f"   Processed {i + 1}/{len(frames)} frames")
         
         print(f"✅ Analysis complete")
-        
-        # Calculate summary
         summary = self._calculate_interview_summary(frame_results)
         
         return {
-            "success": True,
+            "success":        True,
             "analyzed_frames": len(frames),
-            "frame_results": frame_results,
-            "summary": summary
+            "frame_results":  frame_results,
+            "summary":        summary
         }
     
     
@@ -204,7 +226,6 @@ class EmotionDetector:
         if not frame_results:
             return self._empty_summary()
         
-        # Filter valid results
         valid_results = [r for r in frame_results if r['face_detected']]
         
         if not valid_results:
@@ -216,65 +237,61 @@ class EmotionDetector:
             for emotion, value in result['emotions'].items():
                 emotion_totals[emotion] += value
         
-        # Calculate averages
-        total_valid = len(valid_results)
+        total_valid    = len(valid_results)
         emotion_averages = {
             emotion: total / total_valid
             for emotion, total in emotion_totals.items()
         }
+
+        # ── FIX: Use gated dominant on the AVERAGED distribution too ──
+        # This gives a much more reliable overall dominant emotion
+        overall_dominant = self._resolve_dominant(emotion_averages)
         
-        # Calculate interview-specific metrics
-        avg_confidence = sum(r['interview_assessment']['confidence_score'] for r in valid_results) / total_valid
-        avg_enthusiasm = sum(r['interview_assessment']['enthusiasm_score'] for r in valid_results) / total_valid
-        avg_nervousness = sum(r['interview_assessment']['nervousness_score'] for r in valid_results) / total_valid
-        avg_professionalism = sum(r['interview_assessment']['professionalism_score'] for r in valid_results) / total_valid
+        # Interview-specific metrics
+        avg_confidence     = sum(r['interview_assessment']['confidence_score']    for r in valid_results) / total_valid
+        avg_enthusiasm     = sum(r['interview_assessment']['enthusiasm_score']     for r in valid_results) / total_valid
+        avg_nervousness    = sum(r['interview_assessment']['nervousness_score']    for r in valid_results) / total_valid
+        avg_professionalism= sum(r['interview_assessment']['professionalism_score']for r in valid_results) / total_valid
         
-        # Count frames showing positive/negative traits
-        confident_frames = sum(1 for r in valid_results if r['interview_assessment']['appears_confident'])
+        confident_frames    = sum(1 for r in valid_results if r['interview_assessment']['appears_confident'])
         enthusiastic_frames = sum(1 for r in valid_results if r['interview_assessment']['appears_enthusiastic'])
-        nervous_frames = sum(1 for r in valid_results if r['interview_assessment']['appears_nervous'])
+        nervous_frames      = sum(1 for r in valid_results if r['interview_assessment']['appears_nervous'])
         
-        # Calculate percentages
-        confident_pct = (confident_frames / total_valid) * 100
+        confident_pct    = (confident_frames    / total_valid) * 100
         enthusiastic_pct = (enthusiastic_frames / total_valid) * 100
-        nervous_pct = (nervous_frames / total_valid) * 100
+        nervous_pct      = (nervous_frames      / total_valid) * 100
         
-        # Overall assessment
         overall_tone = self._determine_overall_tone(
             avg_confidence, avg_enthusiasm, avg_nervousness, avg_professionalism
         )
         
-        # Generate feedback
         feedback = self._generate_interview_feedback(
             confident_pct, enthusiastic_pct, nervous_pct, overall_tone
         )
         
         return {
-            # Interview-specific metrics
-            "confidence_score": round(avg_confidence, 1),
-            "enthusiasm_score": round(avg_enthusiasm, 1),
-            "nervousness_score": round(avg_nervousness, 1),
-            "professionalism_score": round(avg_professionalism, 1),
+            "dominant_emotion":               overall_dominant,   # ← added, gated
+
+            "confidence_score":               round(avg_confidence, 1),
+            "enthusiasm_score":               round(avg_enthusiasm, 1),
+            "nervousness_score":              round(avg_nervousness, 1),
+            "professionalism_score":          round(avg_professionalism, 1),
             
-            # Percentages
-            "appeared_confident_percentage": round(confident_pct, 1),
+            "appeared_confident_percentage":    round(confident_pct, 1),
             "appeared_enthusiastic_percentage": round(enthusiastic_pct, 1),
-            "appeared_nervous_percentage": round(nervous_pct, 1),
+            "appeared_nervous_percentage":      round(nervous_pct, 1),
             
-            # Basic emotion distribution (for reference)
             "emotion_distribution": {
                 emotion: round(avg, 1)
                 for emotion, avg in emotion_averages.items()
             },
             
-            # Overall assessment
-            "emotional_tone": overall_tone,
-            "interview_feedback": feedback,
+            "emotional_tone":      overall_tone,
+            "interview_feedback":  feedback,
             
-            # Meta
-            "frames_with_face": total_valid,
-            "total_frames_analyzed": len(frame_results),
-            "face_detection_rate": round(total_valid / len(frame_results) * 100, 1)
+            "frames_with_face":        total_valid,
+            "total_frames_analyzed":   len(frame_results),
+            "face_detection_rate":     round(total_valid / len(frame_results) * 100, 1)
         }
     
     
@@ -285,7 +302,6 @@ class EmotionDetector:
         nervousness: float,
         professionalism: float
     ) -> str:
-        """Determine overall emotional tone for interview"""
         if enthusiasm > 40 and confidence > 40:
             return "Highly enthusiastic and confident"
         elif confidence > 40 and professionalism > 50:
@@ -309,28 +325,23 @@ class EmotionDetector:
         nervous_pct: float,
         overall_tone: str
     ) -> str:
-        """Generate actionable feedback for interviewee"""
         feedback_parts = []
         
-        # Confidence feedback
         if confident_pct > 70:
             feedback_parts.append("You project strong confidence throughout.")
         elif confident_pct < 40:
-            feedback_parts.append("Try to show more confidence in your body language and expressions.")
+            feedback_parts.append("Try to show more confidence in your expressions.")
         
-        # Enthusiasm feedback
         if enthusiastic_pct > 60:
             feedback_parts.append("Your enthusiasm comes through clearly!")
         elif enthusiastic_pct < 30:
             feedback_parts.append("Consider showing more enthusiasm when discussing your interests.")
         
-        # Nervousness feedback
         if nervous_pct > 50:
             feedback_parts.append("Try to relax - take deep breaths before answering.")
         elif nervous_pct > 30:
             feedback_parts.append("Some nervousness detected - remember to stay calm.")
         
-        # Overall
         if not feedback_parts:
             feedback_parts.append("Good emotional control and professional demeanor.")
         
@@ -338,27 +349,26 @@ class EmotionDetector:
     
     
     def _empty_summary(self) -> Dict:
-        """Return empty summary when no faces detected"""
         return {
-            "confidence_score": 0,
-            "enthusiasm_score": 0,
-            "nervousness_score": 0,
-            "professionalism_score": 0,
-            "appeared_confident_percentage": 0,
+            "dominant_emotion":               "neutral",
+            "confidence_score":               0,
+            "enthusiasm_score":               0,
+            "nervousness_score":              0,
+            "professionalism_score":          0,
+            "appeared_confident_percentage":  0,
             "appeared_enthusiastic_percentage": 0,
-            "appeared_nervous_percentage": 0,
-            "emotion_distribution": {emotion: 0 for emotion in self.basic_emotions},
-            "emotional_tone": "Unable to detect emotions",
-            "interview_feedback": "No face detected in video",
-            "frames_with_face": 0,
-            "total_frames_analyzed": 0,
-            "face_detection_rate": 0
+            "appeared_nervous_percentage":    0,
+            "emotion_distribution":           {emotion: 0 for emotion in self.basic_emotions},
+            "emotional_tone":                 "Unable to detect emotions",
+            "interview_feedback":             "No face detected in video",
+            "frames_with_face":               0,
+            "total_frames_analyzed":          0,
+            "face_detection_rate":            0
         }
 
 
 # ========== CONVENIENCE FUNCTION ==========
 
 def quick_emotion_analysis(video_path: str) -> Dict:
-    """Quick emotion analysis"""
     detector = EmotionDetector()
     return detector.analyze_video(video_path)

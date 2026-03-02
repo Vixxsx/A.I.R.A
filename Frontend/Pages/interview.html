@@ -280,60 +280,83 @@
         }
 
         /* ── COUNTDOWN ── */
-        .countdown-container {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            display: none; z-index: 500;
-            flex-direction: column; align-items: center;
-        }
-        .countdown-container.active { display: flex; }
+        .countdown-container { display: none; }
 
-        .countdown-circle {
-            position: relative;
-            width: 220px; height: 220px;
+        /* Dark border-track strip around the question card */
+        .cd-arc-wrap {
+            position: absolute;
+            inset: -5px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            border-radius: 26px;
         }
+        .cd-arc-wrap.active { opacity: 1; }
 
-        /* Outer ring */
-        .cd-ring-outer {
+        .cd-arc-svg {
             position: absolute; inset: 0;
-            animation: cdSpinCW 3s linear infinite;
-        }
-        .cd-ring-inner {
-            position: absolute; inset: 16px;
-            animation: cdSpinCCW 2s linear infinite;
-        }
-        @keyframes cdSpinCW  { to { transform: rotate(360deg); } }
-        @keyframes cdSpinCCW { to { transform: rotate(-360deg); } }
-
-        .countdown-number {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: var(--font-display);
-            font-size: 100px; font-weight: 900;
-            background: linear-gradient(180deg, var(--text) 0%, var(--primary) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 0 20px rgba(255,113,206,0.8));
-            animation: numBounce 0.5s cubic-bezier(0.68,-0.55,0.265,1.55);
-        }
-        @keyframes numBounce {
-            0%   { transform: translate(-50%,-50%) scale(0.2); opacity: 0; }
-            60%  { transform: translate(-50%,-50%) scale(1.15); }
-            100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+            width: 100%; height: 100%;
+            overflow: visible;
         }
 
-        .countdown-text {
-            margin-top: 20px;
+        /* Badge sits bottom-center of the card */
+        .cd-badge {
+            position: absolute;
+            bottom: -36px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex; align-items: center; gap: 10px;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
+            background: rgba(5,1,13,0.85);
+            border: 1px solid rgba(1,205,254,0.3);
+            padding: 5px 14px;
+            border-radius: 20px;
+            backdrop-filter: blur(8px);
+            white-space: nowrap;
+        }
+        .cd-badge.active { opacity: 1; }
+
+        .cd-num {
             font-family: var(--font-mono);
-            font-size: 13px; letter-spacing: 0.3em;
+            font-size: 16px; font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #fff;
+            text-shadow: 0 0 14px rgba(1,205,254,1), 0 0 28px rgba(1,205,254,0.5);
+            min-width: 14px; text-align: center;
+        }
+        .cd-sep {
+            color: rgba(255,255,255,0.2);
+            font-size: 12px;
+        }
+        .cd-label {
+            font-family: var(--font-mono);
+            font-size: 10px; letter-spacing: 0.2em;
             text-transform: uppercase;
-            color: rgba(1,205,254,0.7);
-            animation: textFade 0.4s ease;
+            color: rgba(255,255,255,0.5);
         }
-        @keyframes textFade {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
+
+        /* Thinking prompt — inside card, above question text */
+        .cd-think {
+            position: absolute;
+            top: 14px; left: 0; right: 0;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 9px; letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: rgba(255,251,150,0.0);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
         }
+        .cd-think.active {
+            opacity: 1;
+            color: rgba(255,251,150,0.75);
+            animation: thinkBlink 2s ease-in-out infinite;
+        }
+        @keyframes thinkBlink { 0%,100%{opacity:0.55;} 50%{opacity:1;} }
 
         /* ── ANALYZING OVERLAY ── */
         .loading-overlay {
@@ -484,6 +507,39 @@
             <div class="question-display">
                 <div class="question-number" id="questionNumber">Question 1</div>
                 <div class="question-text" id="questionText">Loading question…</div>
+
+                <!-- Countdown arc — depleting border around the card -->
+                <div class="cd-arc-wrap" id="cdArcWrap">
+                    <svg class="cd-arc-svg" id="cdArcSvg" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="arcGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100%" y2="0">
+                                <stop offset="0%"   stop-color="#01CDFE"/>
+                                <stop offset="50%"  stop-color="#B967FF"/>
+                                <stop offset="100%" stop-color="#FF71CE"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Dark backing strip so arc pops against any bg -->
+                        <rect id="cdBacking" rx="22" ry="22" fill="none"
+                            stroke="rgba(0,0,0,0.55)" stroke-width="7"/>
+                        <!-- Dim track -->
+                        <rect id="cdTrack" rx="22" ry="22" fill="none"
+                            stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+                        <!-- Live depleting arc -->
+                        <rect id="cdArc" rx="22" ry="22" fill="none"
+                            stroke="url(#arcGrad)" stroke-width="4"
+                            stroke-linecap="round"/>
+                    </svg>
+                </div>
+
+                <!-- Badge: timer pill -->
+                <div class="cd-badge" id="cdBadge">
+                    <span class="cd-num" id="countdownNumber">5</span>
+                    <span class="cd-sep">·</span>
+                    <span class="cd-label">think &amp; answer</span>
+                </div>
+
+                <!-- Thinking prompt inside card -->
+                <div class="cd-think" id="cdThink">▸ read · think · answer</div>
             </div>
 
             <!-- Controls -->
@@ -495,37 +551,8 @@
         </div>
     </div>
 
-    <!-- Countdown (no dim overlay) -->
-    <div class="countdown-container" id="countdownContainer">
-        <div class="countdown-circle">
-            <!-- Outer ring CW -->
-            <svg viewBox="0 0 220 220" class="cd-ring-outer" style="position:absolute;inset:0;width:100%;height:100%">
-                <defs>
-                    <linearGradient id="cdg1" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%"   stop-color="#FF71CE" stop-opacity="0.15"/>
-                        <stop offset="100%" stop-color="#B967FF"/>
-                    </linearGradient>
-                </defs>
-                <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(185,103,255,0.12)" stroke-width="2"/>
-                <circle cx="110" cy="110" r="100" fill="none" stroke="url(#cdg1)" stroke-width="2"
-                    stroke-linecap="round" stroke-dasharray="400" stroke-dashoffset="120"/>
-            </svg>
-            <!-- Inner ring CCW -->
-            <svg viewBox="0 0 220 220" class="cd-ring-inner" style="position:absolute;inset:0;width:100%;height:100%">
-                <defs>
-                    <linearGradient id="cdg2" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%"   stop-color="#01CDFE" stop-opacity="0.15"/>
-                        <stop offset="100%" stop-color="#01CDFE"/>
-                    </linearGradient>
-                </defs>
-                <circle cx="110" cy="110" r="84" fill="none" stroke="rgba(1,205,254,0.08)" stroke-width="1.5"/>
-                <circle cx="110" cy="110" r="84" fill="none" stroke="url(#cdg2)" stroke-width="1.5"
-                    stroke-linecap="round" stroke-dasharray="340" stroke-dashoffset="230"/>
-            </svg>
-            <div class="countdown-number" id="countdownNumber">5</div>
-        </div>
-        <div class="countdown-text" id="countdownText">Get ready to answer!</div>
-    </div>
+    <!-- Countdown lives INSIDE the question card — see .cd-arc-wrap injected below -->
+    <div class="countdown-container" id="countdownContainer" aria-hidden="true"></div>
 
     <!-- Analyzing Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -569,5 +596,134 @@
     </div>
 
     <script src="../Assets/interview.js"></script>
+
+    <script>
+    (function () {
+        const arcWrap  = document.getElementById('cdArcWrap');
+        const badge    = document.getElementById('cdBadge');
+        const numEl    = document.getElementById('countdownNumber');
+        const think    = document.getElementById('cdThink');
+        const arcEl    = document.getElementById('cdArc');
+        const trackEl  = document.getElementById('cdTrack');
+        const backEl   = document.getElementById('cdBacking');
+        const svgEl    = document.getElementById('cdArcSvg');
+
+        let rafId = null, startTime = null;
+        let cdTotal = 5;
+
+        // Perimeter of a rounded rect
+        function perimOf(w, h, rx) {
+            return 2 * (w + h) - (8 - 2 * Math.PI) * rx;
+        }
+
+        function syncAndGetPerim() {
+            const card = document.querySelector('.question-display');
+            if (!card) return 0;
+            const pad = 10;
+            const cw = card.offsetWidth  + pad * 2;
+            const ch = card.offsetHeight + pad * 2;
+            const rx = 22;
+
+            svgEl.setAttribute('viewBox', `0 0 ${cw} ${ch}`);
+            svgEl.style.width  = cw + 'px';
+            svgEl.style.height = ch + 'px';
+            arcWrap.style.width  = cw + 'px';
+            arcWrap.style.height = ch + 'px';
+            arcWrap.style.left   = -pad + 'px';
+            arcWrap.style.top    = -pad + 'px';
+
+            // Also update linearGradient to span the SVG
+            const grad = svgEl.querySelector('#arcGrad');
+            if (grad) { grad.setAttribute('x2', cw); grad.setAttribute('y2', ch); }
+
+            const margin = 4;
+            [arcEl, trackEl, backEl].forEach(el => {
+                if (!el) return;
+                el.setAttribute('x',      margin);
+                el.setAttribute('y',      margin);
+                el.setAttribute('width',  cw - margin * 2);
+                el.setAttribute('height', ch - margin * 2);
+                el.setAttribute('rx', rx);
+                el.setAttribute('ry', rx);
+            });
+
+            return perimOf(cw - margin * 2, ch - margin * 2, rx);
+        }
+
+        function paintArc(frac) {
+            const p = syncAndGetPerim();
+            if (!p) return;
+
+            arcEl.style.strokeDasharray  = p;
+            // Start from top-center going clockwise: offset = p * (1-frac)
+            arcEl.style.strokeDashoffset = p * (1 - frac);
+
+            // Glow colour: cyan → violet → pink as time depletes
+            let glow;
+            if      (frac > 0.65) glow = 'drop-shadow(0 0 7px rgba(1,205,254,1))   drop-shadow(0 0 14px rgba(1,205,254,0.5))';
+            else if (frac > 0.35) glow = 'drop-shadow(0 0 7px rgba(185,103,255,1)) drop-shadow(0 0 14px rgba(185,103,255,0.5))';
+            else                  glow = 'drop-shadow(0 0 9px rgba(255,113,206,1)) drop-shadow(0 0 18px rgba(255,113,206,0.6))';
+            arcEl.style.filter = glow;
+        }
+
+        function startArc(seconds) {
+            if (rafId) cancelAnimationFrame(rafId);
+            cdTotal   = seconds;
+            startTime = null;
+            numEl.textContent = seconds;
+
+            arcWrap.classList.add('active');
+            badge.classList.add('active');
+            think.classList.add('active');
+
+            // Prime the sizes immediately
+            syncAndGetPerim();
+
+            function tick(ts) {
+                if (!startTime) startTime = ts;
+                const elapsed   = (ts - startTime) / 1000;
+                const remaining = Math.max(cdTotal - elapsed, 0);
+                const frac      = remaining / cdTotal;
+
+                // Smooth number (ceiling so it shows "5" for the full first second)
+                const disp = Math.ceil(remaining);
+                if (numEl.textContent !== String(disp)) numEl.textContent = disp;
+
+                paintArc(frac);
+
+                if (remaining > 0) {
+                    rafId = requestAnimationFrame(tick);
+                } else {
+                    stopArc();
+                }
+            }
+
+            rafId = requestAnimationFrame(tick);
+        }
+
+        function stopArc() {
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = null;
+            arcWrap.classList.remove('active');
+            badge.classList.remove('active');
+            think.classList.remove('active');
+        }
+
+        window.startCountdown = startArc;
+        window.stopCountdown  = stopArc;
+
+        // Legacy API: interview.js adds .active to #countdownContainer
+        const legacy = document.getElementById('countdownContainer');
+        if (legacy) {
+            new MutationObserver(() => {
+                legacy.classList.contains('active') ? startArc(5) : stopArc();
+            }).observe(legacy, { attributes: true, attributeFilter: ['class'] });
+        }
+
+        window.addEventListener('resize', () => {
+            if (arcWrap && arcWrap.classList.contains('active')) syncAndGetPerim();
+        });
+    })();
+    </script>
 </body>
 </html>

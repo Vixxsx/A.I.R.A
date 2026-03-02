@@ -180,7 +180,7 @@ function showMessage(text, type) {
         // Create message div if it doesn't exist
         messageDiv = document.createElement('div');
         messageDiv.id = 'message';
-        messageDiv.style.cssText = `
+        messageDiv.theme.cssText = `
             position: fixed;
             top: 20px;
             left: 50%;

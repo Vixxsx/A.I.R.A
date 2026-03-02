@@ -124,7 +124,19 @@ class WhisperSTT:
         return data
     
     def transcribe_and_save(self, audio_path, save_transcript=True):
-        result = self.transcribe_audio(audio_path)
+        result = self.model.transcribe(
+            audio_path,
+            language="en",           # Force English — stops it guessing wrong language mid-sentence
+            initial_prompt=(
+                "This is a professional job interview. "
+                "The candidate is discussing work experience, deadlines, teamwork, "
+                "group projects, technical skills, and career goals."
+            ),
+            temperature=0.0,         # Greedy decoding — more deterministic, less hallucination
+            best_of=1,               # No sampling
+            beam_size=5,             # Better beam search
+            condition_on_previous_text=True,
+        )
         saved_path = None
         if save_transcript:
             audio_name = os.path.splitext(os.path.basename(audio_path))[0]
@@ -146,7 +158,7 @@ def test_whisper():
     print("="*70)
     
     # Initialize Whisper
-    stt = WhisperSTT(model_size="base")
+    stt = WhisperSTT(model_size="medium")
     
     # Test audio file path
     test_audio = "Data/Audio/test_audio.wav"
