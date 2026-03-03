@@ -27,6 +27,7 @@ class InterviewSummary(BaseModel):
     job_role: str
     grade: str
     overall_score: int
+    questions_answered:int=0
 
 
 def load_interviews() -> List[dict]:
@@ -73,7 +74,8 @@ async def save_interview(summary: InterviewSummary):
             "timestamp": summary.timestamp,
             "job_role": summary.job_role,
             "grade": summary.grade,
-            "overall_score": summary.overall_score
+            "overall_score": summary.overall_score,
+            "questions_answered":  summary.questions_answered
         })
         
         # Keep only most recent 50 interviews per user
@@ -112,28 +114,14 @@ async def save_interview(summary: InterviewSummary):
 
 @router.get("/recent")
 async def get_recent_interviews(username: str, limit: int = 5):
-    """
-    Get recent interviews for a user
-    
-    Args:
-        username: Username to fetch interviews for
-        limit: Number of recent interviews to return (default 5)
-    
-    Returns:
-        List of interview summaries
-    """
     try:
         print(f"\n📋 Fetching recent interviews for: {username}")
-        
-        # Load all interviews
         interviews = load_interviews()
-        
-        # Filter by username
+
         user_interviews = [
             interview for interview in interviews 
             if interview['username'].lower() == username.lower()
         ]
-        
         # Sort by timestamp descending (most recent first)
         user_interviews.sort(key=lambda x: x['timestamp'], reverse=True)
         

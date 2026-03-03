@@ -151,43 +151,98 @@ Return ONLY a raw JSON array. No markdown. No explanation. No code fences:
 
 
     def _generate_from_templates(self, profile: Dict, num_questions: int) -> List[Dict]:
-
+        """
+        Generate questions from templates with proper type enforcement
+        - mixed: EXACTLY 50/50 split between technical and behavioral
+        - technical: 80% technical, 20% behavioral
+        - behavioral: 80% behavioral, 20% technical
+        """
         print(f"📝 Generating {num_questions} questions from templates...")
 
         job_role       = profile.get('job_role',       'Software Engineer')
         difficulty     = profile.get('difficulty',     'intermediate')
         interview_type = profile.get('interview_type', 'mixed').lower()
 
-        all_questions = []
-
-        if interview_type == 'behavioral':
-            all_questions.extend(self.template_questions['behavioral'])
-            all_questions.extend(self.template_questions['situational'])
-        elif interview_type == 'technical':
-            all_questions.extend(self.template_questions['technical'])
-        else:  # mixed
-            if job_role.lower() in ['software engineer', 'developer', 'programmer']:
-                all_questions.extend(self.template_questions['technical'])
-            all_questions.extend(self.template_questions['behavioral'])
-            all_questions.extend(self.template_questions['situational'])
-
         difficulty_map = {
             'beginner':     ['easy'],
             'intermediate': ['easy', 'medium'],
             'advanced':     ['medium', 'hard'],
         }
-        allowed  = difficulty_map.get(difficulty.lower(), ['easy', 'medium'])
-        filtered = [q for q in all_questions if q['difficulty'] in allowed]
+        allowed = difficulty_map.get(difficulty.lower(), ['easy', 'medium'])
 
-        if not filtered:
-            filtered = all_questions
+        if interview_type == 'mixed':
+            # ENFORCE 50/50 SPLIT
+            tech_pool = [q for q in self.template_questions['technical'] 
+                         if q['difficulty'] in allowed]
+            behav_pool = [q for q in (self.template_questions['behavioral'] + 
+                                      self.template_questions['situational'])
+                          if q['difficulty'] in allowed]
+            
+            # Calculate split
+            tech_count = num_questions // 2
+            behav_count = num_questions - tech_count
+            
+            # Sample from each pool
+            tech_selected = random.sample(tech_pool, min(tech_count, len(tech_pool)))
+            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
+            
+            # Combine and shuffle
+            selected = tech_selected + behav_selected
+            random.shuffle(selected)
+            
+            # Add IDs
+            for i, q in enumerate(selected, 1):
+                q['id'] = i
+            
+            print(f"✅ Selected {len(tech_selected)} technical + {len(behav_selected)} behavioral = {len(selected)} total")
+            return selected
+            
+        elif interview_type == 'technical':
+            # 80% technical, 20% behavioral
+            tech_pool = [q for q in self.template_questions['technical'] 
+                         if q['difficulty'] in allowed]
+            behav_pool = [q for q in self.template_questions['behavioral'] 
+                          if q['difficulty'] in allowed]
+            
+            tech_count = int(num_questions * 0.8)
+            behav_count = num_questions - tech_count
+            
+            tech_selected = random.sample(tech_pool, min(tech_count, len(tech_pool)))
+            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
+            
+            selected = tech_selected + behav_selected
+            random.shuffle(selected)
+            
+        elif interview_type == 'behavioral':
+            # 80% behavioral, 20% technical
+            behav_pool = [q for q in (self.template_questions['behavioral'] + 
+                                      self.template_questions['situational'])
+                          if q['difficulty'] in allowed]
+            tech_pool = [q for q in self.template_questions['technical'] 
+                         if q['difficulty'] in allowed]
+            
+            behav_count = int(num_questions * 0.8)
+            tech_count = num_questions - behav_count
+            
+            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
+            tech_selected = random.sample(tech_pool, min(tech_count, len(tech_pool)))
+            
+            selected = behav_selected + tech_selected
+            random.shuffle(selected)
+            
+        else:
+            # Fallback
+            all_questions = (self.template_questions['technical'] + 
+                           self.template_questions['behavioral'] + 
+                           self.template_questions['situational'])
+            filtered = [q for q in all_questions if q['difficulty'] in allowed]
+            selected = random.sample(filtered, min(num_questions, len(filtered)))
 
-        selected = random.sample(filtered, min(num_questions, len(filtered)))
-
+        # Add IDs
         for i, q in enumerate(selected, 1):
             q['id'] = i
 
-        print(f"✅ Selected {len(selected)} template questions")
+        print(f"✅ Selected {len(selected)} {interview_type} questions")
         return selected
 
 
@@ -249,7 +304,7 @@ if __name__ == "__main__":
             "company_type":   "Tech Company",
             "interview_type": itype
         }
-        questions = generator.generate_questions(profile=profile, num_questions=4)
+        questions = generator.generate_questions(profile=profile, num_questions=6)
         for q in questions:
             print(f"{q['id']}. [{q['category'].upper()}] {q['question']}")
             print(f"   Difficulty: {q['difficulty']} | Time: {q['time_limit']}s\n")

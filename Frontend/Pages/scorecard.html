@@ -680,43 +680,110 @@ function loadData() {
 
 function calcAvg(results) {
     if (!results?.length) return demo();
-    let tC=0,tA=0,tE=0,tB=0, cC=0,aC=0,eC=0,bC=0;
-    let fil=0,wds=0,wpm=0,wN=0; let conf=[],enth=[];
+    
+    let tC=0, tA=0, tE=0, tB=0;
+    let cC=0, aC=0, eC=0, bC=0;
+    let fil=0, wds=0, wpm=0, wN=0;
+    let conf=[], enth=[];
+    
     results.forEach(r => {
         if (!r.success) return;
-        if (r.transcript) {
-            const wc=r.transcript.word_count||0, dur=r.transcript.duration_seconds||1;
-            let s=70; if(wc>=50&&wc<=250) s+=15; if(dur>=30&&dur<=120) s+=15;
-            tC+=s; cC++;
+        
+        // CONTENT - Use ACTUAL relevancy score if available
+        if (r.content_relevancy && typeof r.content_relevancy.score === 'number') {
+            // Use the real backend score!
+            tC += r.content_relevancy.score;
+            cC++;
+        } else if (r.transcript) {
+            // Fallback only if content_relevancy doesn't exist
+            const wc = r.transcript.word_count || 0;
+            const dur = r.transcript.duration_seconds || 1;
+            let s = 75; // Decent base
+            if (wc >= 40 && wc <= 300) s += 10;
+            if (dur >= 20 && dur <= 150) s += 10;
+            tC += s;
+            cC++;
         }
+        
+        // AUDIO
         if (r.audio_quality) {
-            tA+=r.audio_quality.overall_score; aC++;
-            if(r.filler_analysis){ fil+=r.filler_analysis.total_fillers; wds+=r.transcript?.word_count||0; }
-            if(r.transcript?.words_per_minute){ wpm+=r.transcript.words_per_minute; wN++; }
+            tA += r.audio_quality.overall_score;
+            aC++;
+            if (r.filler_analysis) {
+                fil += r.filler_analysis.total_fillers;
+                wds += r.transcript?.word_count || 0;
+            }
+            if (r.transcript?.words_per_minute) {
+                wpm += r.transcript.words_per_minute;
+                wN++;
+            }
         }
-        tE+=70; eC++;
+        
+        // EYE CONTACT
+        if (r.eye_contact && typeof r.eye_contact.score === 'number') {
+            tE += r.eye_contact.score;
+            eC++;
+        } else {
+            tE += 70; // Default
+            eC++;
+        }
+        
+        // BODY LANGUAGE / EMOTIONS
         if (r.body_language) {
-            tB+=r.body_language.score; bC++;
-            if(r.emotion_analysis){ conf.push(r.emotion_analysis.confidence_score); enth.push(r.emotion_analysis.enthusiasm_score); }
+            tB += r.body_language.score;
+            bC++;
+            if (r.emotion_analysis) {
+                conf.push(r.emotion_analysis.confidence_score);
+                enth.push(r.emotion_analysis.enthusiasm_score);
+            }
         }
     });
-    const c=cC>0?Math.round(tC/cC):70, a=aC>0?Math.round(tA/aC):75,
-          e=eC>0?Math.round(tE/eC):70, b=bC>0?Math.round(tB/bC):75;
-    const avgW=wN>0?Math.round(wpm/wN):145;
-    const fd=wds>0?((fil/wds)*100).toFixed(1):0.5;
-    const ac=conf.length>0?(conf.reduce((x,y)=>x+y)/conf.length).toFixed(1):50;
-    const ae=enth.length>0?(enth.reduce((x,y)=>x+y)/enth.length).toFixed(1):50;
+    
+    // Calculate averages
+    const c = cC > 0 ? Math.round(tC / cC) : 70;
+    const a = aC > 0 ? Math.round(tA / aC) : 75;
+    const e = eC > 0 ? Math.round(tE / eC) : 70;
+    const b = bC > 0 ? Math.round(tB / bC) : 75;
+    
+    const avgW = wN > 0 ? Math.round(wpm / wN) : 145;
+    const fd = wds > 0 ? ((fil / wds) * 100).toFixed(1) : 0.5;
+    const ac = conf.length > 0 ? (conf.reduce((x,y) => x + y) / conf.length).toFixed(1) : 50;
+    const ae = enth.length > 0 ? (enth.reduce((x,y) => x + y) / enth.length).toFixed(1) : 50;
+    
     return {
-        content:    { score:c, addresses:c>=70, examples:results.length,
-                      feedback:c>=80?"Strong relevant answers.":c>=60?"Good — add more specifics.":"Give more detailed answers." },
-        audio:      { score:a, fillers:fil, fd:parseFloat(fd), wpm:avgW,
-                      clarity:a>=85?"Excellent":a>=70?"Good":"Needs Work",
-                      feedback:a>=85?"Excellent pace, minimal fillers.":a>=70?"Reduce filler words slightly.":"Focus on clarity." },
-        eye_contact:{ score:e, focus:e, engagement:e>=75?"Good":e>=60?"Moderate":"Low",
-                      feedback:e>=75?"Good camera focus.":"Look at the camera more consistently." },
-        emotions:   { score:b, confidence:ac>=60?"High":ac>=40?"Moderate":"Low",
-                      enthusiasm:ae>=60?"High":ae>=40?"Good":"Low",
-                      feedback:b>=80?"Strong confidence shown.":b>=60?"Good body language.":"Work on appearing more confident." }
+        content: {
+            score: c,
+            addresses: c >= 70,
+            examples: results.length,
+            feedback: c >= 80 ? "Strong relevant answers." :
+                     c >= 60 ? "Good — add more specifics." :
+                     "Give more detailed answers."
+        },
+        audio: {
+            score: a,
+            fillers: fil,
+            fd: parseFloat(fd),
+            wpm: avgW,
+            clarity: a >= 85 ? "Excellent" : a >= 70 ? "Good" : "Needs Work",
+            feedback: a >= 85 ? "Excellent pace, minimal fillers." :
+                     a >= 70 ? "Reduce filler words slightly." :
+                     "Focus on clarity."
+        },
+        eye_contact: {
+            score: e,
+            focus: e,
+            engagement: e >= 75 ? "Good" : e >= 60 ? "Moderate" : "Low",
+            feedback: e >= 75 ? "Good camera focus." :
+                     "Look at the camera more consistently."
+        },
+        emotions: {
+            score: b,
+            confidence: ac >= 60 ? "High" : ac >= 40 ? "Moderate" : "Low",
+            enthusiasm: ae >= 60 ? "High" : ae >= 40 ? "Good" : "Low",
+            feedback: b >= 80 ? "Strong confidence shown." :
+                     b >= 60 ? "Good body language." :
+                     "Work on appearing more confident."
+        }
     };
 }
 
@@ -909,7 +976,7 @@ const GC = { S:'#fbe238', A:'#05FFA1', B:'#01CDFE', C:'#FFFB96', D:'#f49829', F:
 const GM = {
     S:'🌟 LEGENDARY · PERFECT 🌟',   A:'✨ EXCELLENT · OUTSTANDING ✨',
     B:'💫 GREAT · WELL DONE 💫',      C:'👍 GOOD · KEEP IMPROVING 👍',
-    D:'📈 NEEDS WORK 📈',             F:'💪 KEEP PRACTISING 💪'
+    D:'📈 NEEDS WORK 📈',             F:'💪 KEEP PRACTICING 💪'
 };
 
 function buildResults(grade, overall) {

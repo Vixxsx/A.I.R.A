@@ -7,7 +7,7 @@ from datetime import datetime
 
 class WhisperSTT:
     
-    def __init__(self, model_size="base"):
+    def __init__(self, model_size="small"):
         print(f"🎤 Loading Whisper '{model_size}' model...")
         self.model = whisper.load_model(model_size)
         self.model_size = model_size
@@ -158,7 +158,7 @@ def test_whisper():
     print("="*70)
     
     # Initialize Whisper
-    stt = WhisperSTT(model_size="medium")
+    stt = WhisperSTT(model_size="small")
     
     # Test audio file path
     test_audio = "Data/Audio/test_audio.wav"

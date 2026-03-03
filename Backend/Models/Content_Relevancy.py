@@ -109,12 +109,18 @@ Return ONLY a raw JSON object. No markdown. No explanation:
   "suggestion":        "<one specific actionable tip to improve this answer>"
 }}
 
-Scoring guide:
-- 85-100: Directly addresses the question with strong relevant detail
-- 65-84:  Mostly relevant but missing some key points or depth
-- 40-64:  Partially relevant, tangential, or very vague
-- 15-39:  Barely addresses the question, mostly off-topic
-- 0-14:   Gibberish, completely irrelevant, or no real attempt"""
+IMPORTANT: Be LENIENT and FAIR. Many candidates are nervous.
+Give credit for partial attempts and effort.
+
+Scoring guide (BE LENIENT):
+- 80-100: Directly addresses the question with good relevant detail
+- 65-79:  Addresses the question with some relevant points, may lack depth  
+- 50-64:  Attempts to answer, somewhat relevant but vague or incomplete
+- 35-49:  Partially relevant or tangential, but shows some understanding
+- 20-34:  Barely addresses the question, mostly off-topic
+- 0-19:   Gibberish, completely irrelevant, or no real attempt
+
+REMEMBER: Give credit for trying! Most answers should score 50-75. However Dont give credit for rambling off-topic or missing the point entirely."""
 
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
@@ -122,8 +128,8 @@ Scoring guide:
                 {
                     "role": "system",
                     "content": (
-                        f"You are a strict but fair interview evaluator for {job_role} roles. "
-                        f"Be honest — do not inflate scores. Return only valid raw JSON."
+                        f"You are a fair and encouraging interview evaluator for {job_role} roles. "
+                        f"Be lenient - give credit for trying. Return only valid raw JSON."
                     )
                 },
                 {

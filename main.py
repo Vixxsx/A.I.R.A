@@ -49,7 +49,7 @@ app.add_middleware(
 # ========== LOAD AI MODELS ==========
 
 print("🎤 Loading Whisper model...")
-stt = WhisperSTT(model_size="base")
+stt = WhisperSTT(model_size="small")
 print("✅ Whisper loaded!")
 
 print("🔍 Loading Filler Detector...")

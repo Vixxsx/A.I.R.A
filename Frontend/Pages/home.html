@@ -65,26 +65,45 @@
         .welcome-text h2 span { background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .welcome-text p { font-size: 13px; color: rgba(255,251,150,0.4); letter-spacing: 0.5px; margin-top: 2px; }
 
-        .about-btn {
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .about-btn, .logout-btn {
             font-family: var(--font-display);
             font-size: 0.65rem;
             letter-spacing: 0.2em;
             text-transform: uppercase;
             padding: 10px 24px;
             background: transparent;
-            color: var(--secondary);
-            border: 2px solid var(--secondary);
+            border: 2px solid;
             cursor: pointer;
             border-radius: var(--radius-sm);
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 0 0 10px rgba(1,205,254,0.2), inset 0 0 10px rgba(1,205,254,0.05);
             text-decoration: none;
+        }
+
+        .about-btn {
+            color: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px rgba(1,205,254,0.2), inset 0 0 10px rgba(1,205,254,0.05);
         }
         .about-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(1,205,254,0.2); transform: translate(-50%,-50%); transition: width 0.5s, height 0.5s; }
         .about-btn:hover::before { width: 300px; height: 300px; }
         .about-btn:hover { color: white; box-shadow: 0 0 25px rgba(1,205,254,0.6), inset 0 0 20px rgba(1,205,254,0.15); }
+
+        .logout-btn {
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(255,113,206,0.2), inset 0 0 10px rgba(255,113,206,0.05);
+        }
+        .logout-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,113,206,0.2); transform: translate(-50%,-50%); transition: width 0.5s, height 0.5s; }
+        .logout-btn:hover::before { width: 300px; height: 300px; }
+        .logout-btn:hover { color: white; box-shadow: 0 0 25px rgba(255,113,206,0.6), inset 0 0 20px rgba(255,113,206,0.15); }
 
         .container { max-width: 860px; margin: 50px auto; padding: 0 24px 60px; position: relative; z-index: 10; }
 
@@ -99,8 +118,6 @@
             overflow: hidden;
             animation: slideUp 0.6s ease-out both;
         }
-
-        
 
         .setup-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), var(--secondary), var(--primary), transparent); opacity: 0.6; }
         .setup-card::after { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(185,103,255,0.12) 0%, transparent 70%); pointer-events: none; }
@@ -151,7 +168,6 @@
             background-position: right 14px center;
         }
 
-        /* Right-side accent glow strip on selects */
         .select-wrap { position: relative; }
         .select-wrap::after {
             content: '';
@@ -235,12 +251,179 @@
         .feature-item h3 { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.05em; color: var(--secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .feature-item p { font-size: 12px; color: rgba(255,251,150,0.4); line-height: 1.7; margin: 0; }
 
+        /* ══════════════════════════════════
+           LOGOUT CONFIRMATION OVERLAY
+        ══════════════════════════════════ */
+        .logout-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+            padding: 20px;
+        }
+
+        .logout-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-card {
+            background: rgba(5,1,13,0.97);
+            border: 1px solid rgba(255,113,206,0.3);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8), 0 0 40px rgba(255,113,206,0.15);
+            animation: modalSlide 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .logout-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), transparent);
+            opacity: 0.7;
+        }
+
+        .logout-card::after {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,113,206,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .logout-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255,113,206,0.6));
+        }
+
+        .logout-title {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .logout-message {
+            font-size: 14px;
+            color: rgba(255,251,150,0.5);
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .logout-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .logout-confirm-btn,
+        .logout-cancel-btn {
+            padding: 14px 32px;
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border: 2px solid;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .logout-confirm-btn {
+            background: transparent;
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(255,113,206,0.25), inset 0 0 10px rgba(255,113,206,0.06);
+        }
+
+        .logout-confirm-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,113,206,0.25);
+            transform: translate(-50%,-50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .logout-confirm-btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .logout-confirm-btn:hover {
+            color: white;
+            box-shadow: 0 0 30px rgba(255,113,206,0.6), inset 0 0 20px rgba(255,113,206,0.15);
+        }
+
+        .logout-cancel-btn {
+            background: transparent;
+            color: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(1,205,254,0.25), inset 0 0 10px rgba(1,205,254,0.06);
+        }
+
+        .logout-cancel-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(1,205,254,0.25);
+            transform: translate(-50%,-50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .logout-cancel-btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+
+        .logout-cancel-btn:hover {
+            color: white;
+            box-shadow: 0 0 30px rgba(1,205,254,0.6), inset 0 0 20px rgba(1,205,254,0.15);
+        }
+
         @media (max-width: 768px) {
             .header { padding: 14px 20px; flex-wrap: wrap; gap: 12px; }
+            .header-actions { width: 100%; justify-content: flex-end; }
             .setup-card { padding: 28px 20px; }
             .interview-form { grid-template-columns: 1fr; }
             .features-grid { grid-template-columns: 1fr; }
             .modal-content { padding: 28px 20px; }
+            .logout-card { padding: 30px 20px; }
+            .logout-actions { flex-direction: column; }
         }
 
         /* ══════════════════════════════════
@@ -258,8 +441,6 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.25s ease;
-
-            /* Layered dark bg + scanlines + grid */
             background:
                 repeating-linear-gradient(
                     0deg,
@@ -283,7 +464,6 @@
             pointer-events: all;
         }
 
-        /* Corner brackets */
         .lo-corner {
             position: absolute;
             width: 24px; height: 24px;
@@ -296,7 +476,6 @@
         .lo-corner.bl { bottom: 28px; left: 28px; border-width: 0 0 2px 2px; }
         .lo-corner.br { bottom: 28px; right: 28px; border-width: 0 2px 2px 0; }
 
-        /* Outer spinning ring */
         .lo-ring-outer {
             position: relative;
             width: 160px; height: 160px;
@@ -312,7 +491,6 @@
         @keyframes spinCW  { to { transform: rotate(360deg); } }
         @keyframes spinCCW { to { transform: rotate(-360deg); } }
 
-        /* Inner hex icon */
         .lo-hex {
             position: absolute;
             inset: 0;
@@ -326,7 +504,6 @@
             50%      { transform: scale(1.12); opacity: 0.75; }
         }
 
-        /* Sweeping scan line across the whole overlay */
         .lo-scan {
             position: absolute;
             left: 0; right: 0;
@@ -343,7 +520,6 @@
             100% { top: 100%; opacity: 0; }
         }
 
-        /* Title */
         .lo-title {
             font-family: var(--font-display);
             font-size: 20px;
@@ -358,7 +534,6 @@
             filter: drop-shadow(0 0 14px rgba(255,113,206,0.5));
         }
 
-        /* Cycling status line */
         .lo-status {
             font-family: var(--font-mono);
             font-size: 11px;
@@ -371,7 +546,6 @@
         }
         @keyframes statusBlink { 0%,100%{opacity:1;} 50%{opacity:0;} }
 
-        /* Progress bar */
         .lo-bar-track {
             width: 240px; height: 2px;
             background: rgba(255,255,255,0.08);
@@ -388,7 +562,6 @@
             transition: width 0.15s ease;
         }
 
-        /* Dot row beneath bar */
         .lo-dots {
             display: flex; gap: 6px;
             margin-top: 14px;
@@ -402,145 +575,146 @@
             background: var(--primary);
             box-shadow: 0 0 8px var(--primary);
         }
+
         /* Interview History Styles */
-.history-container {
-    animation: slideUp 0.8s ease-out both;
-    animation-delay: 0.2s;
-}
+        .history-container {
+            animation: slideUp 0.8s ease-out both;
+            animation-delay: 0.2s;
+        }
 
-.history-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-}
+        .history-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
 
-.history-card {
-    background: rgba(5, 1, 13, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(1, 205, 254, 0.15);
-    border-radius: 12px;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 20px;
-    align-items: center;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
+        .history-card {
+            background: rgba(5, 1, 13, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(1, 205, 254, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-.history-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--secondary), var(--primary));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
+        .history-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--secondary), var(--primary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-.history-card:hover {
-    border-color: rgba(255, 113, 206, 0.3);
-    box-shadow: 0 0 20px rgba(255, 113, 206, 0.15);
-    transform: translateX(5px);
-}
+        .history-card:hover {
+            border-color: rgba(255, 113, 206, 0.3);
+            box-shadow: 0 0 20px rgba(255, 113, 206, 0.15);
+            transform: translateX(5px);
+        }
 
-.history-card:hover::before {
-    opacity: 1;
-}
+        .history-card:hover::before {
+            opacity: 1;
+        }
 
-.history-grade {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 900;
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    flex-shrink: 0;
-}
+        .history-grade {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
 
-.history-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+        .history-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
 
-.history-role {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: 0.03em;
-}
+        .history-role {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.03em;
+        }
 
-.history-date {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: rgba(255, 251, 150, 0.4);
-    font-family: var(--font-mono);
-}
+        .history-date {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: rgba(255, 251, 150, 0.4);
+            font-family: var(--font-mono);
+        }
 
-.history-score {
-    text-align: center;
-    flex-shrink: 0;
-}
+        .history-score {
+            text-align: center;
+            flex-shrink: 0;
+        }
 
-.score-value {
-    font-family: var(--font-display);
-    font-size: 32px;
-    font-weight: 900;
-    background: var(--gradient-accent);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-    margin-bottom: 4px;
-}
+        .score-value {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 900;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
 
-.score-label {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255, 251, 150, 0.3);
-}
+        .score-label {
+            font-size: 10px;
+            font-family: var(--font-mono);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 251, 150, 0.3);
+        }
 
-@media (max-width: 768px) {
-    .history-card {
-        grid-template-columns: auto 1fr;
-        gap: 16px;
-    }
-    
-    .history-grade {
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
-    }
-    
-    .history-score {
-        grid-column: 1 / -1;
-        text-align: left;
-        padding-left: 66px;
-    }
-    
-    .score-value {
-        font-size: 24px;
-        display: inline-block;
-        margin-right: 8px;
-    }
-    
-    .score-label {
-        display: inline-block;
-    }
-}
+        @media (max-width: 768px) {
+            .history-card {
+                grid-template-columns: auto 1fr;
+                gap: 16px;
+            }
+            
+            .history-grade {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            
+            .history-score {
+                grid-column: 1 / -1;
+                text-align: left;
+                padding-left: 66px;
+            }
+            
+            .score-value {
+                font-size: 24px;
+                display: inline-block;
+                margin-right: 8px;
+            }
+            
+            .score-label {
+                display: inline-block;
+            }
+        }
     </style>
 </head>
 <body>
@@ -556,7 +730,10 @@
                 <p>Ready to ace your next interview?</p>
             </div>
         </div>
-        <button class="about-btn" onclick="openModal()">About AIRA</button>
+        <div class="header-actions">
+            <button class="about-btn" onclick="openModal()">About AIRA</button>
+            <button class="logout-btn" onclick="showLogoutConfirm()">🚪 Logout</button>
+        </div>
     </header>
 
     <div class="container">
@@ -601,37 +778,39 @@
                     <button type="submit" class="start-btn">🚀 Start Interview</button>
                 </div>
             </form>
+            
             <div class="history-container" style="margin-top: 40px;">
-    <div class="history-header">
-        <h2 style="
-            font-family: var(--font-display);
-            font-size: 20px;
-            letter-spacing: 0.05em;
-            background: linear-gradient(90deg, var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-        ">📊 Recent Interviews</h2>
-        <p style="
-            font-size: 13px;
-            color: rgba(255, 251, 150, 0.4);
-            margin-bottom: 20px;
-        ">Your last 5 interview performances</p>
-    </div>
-    
-    <div id="historySection" class="history-grid">
-        <!-- History cards will be inserted here by JavaScript -->
-        <div style="text-align: center; padding: 40px; color: rgba(255, 251, 150, 0.3);">
-            <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
-            <p style="font-size: 14px;">Loading interview history...</p>
-        </div>
-    </div>
-</div>
+                <div class="history-header">
+                    <h2 style="
+                        font-family: var(--font-display);
+                        font-size: 20px;
+                        letter-spacing: 0.05em;
+                        background: linear-gradient(90deg, var(--secondary), var(--accent));
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        background-clip: text;
+                        margin-bottom: 8px;
+                    ">📊 Recent Interviews</h2>
+                    <p style="
+                        font-size: 13px;
+                        color: rgba(255, 251, 150, 0.4);
+                        margin-bottom: 20px;
+                    ">Your last 5 interview performances</p>
+                </div>
+                
+                <div id="historySection" class="history-grid">
+                    <div style="text-align: center; padding: 40px; color: rgba(255, 251, 150, 0.3);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+                        <p style="font-size: 14px;">Loading interview history...</p>
+                    </div>
+                </div>
+            </div>
+            
             <div id="message" class="message"></div>
         </div>
     </div>
 
+    <!-- ABOUT MODAL -->
     <div id="aboutModal" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal()">&times;</button>
@@ -649,8 +828,23 @@
         </div>
     </div>
 
+    <!-- LOGOUT CONFIRMATION OVERLAY -->
+    <div id="logoutOverlay" class="logout-overlay">
+        <div class="logout-card">
+            <div class="logout-icon">🚪</div>
+            <div class="logout-title">Confirm Logout</div>
+            <div class="logout-message">
+                Are you sure you want to logout? <br>
+                Your progress will be saved.
+            </div>
+            <div class="logout-actions">
+                <button class="logout-confirm-btn" onclick="confirmLogout()">Yes, Logout</button>
+                <button class="logout-cancel-btn" onclick="hideLogoutConfirm()">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- ══ SCI-FI LOADING OVERLAY ══ -->
+    <!-- LOADING OVERLAY -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="lo-corner tl"></div>
         <div class="lo-corner tr"></div>
@@ -659,7 +853,6 @@
         <div class="lo-scan"></div>
 
         <div class="lo-ring-outer">
-            <!-- Outer slow ring -->
             <svg viewBox="0 0 160 160" class="lo-spin-cw" style="transform-origin:80px 80px">
                 <defs>
                     <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -672,7 +865,6 @@
                 <circle cx="80" cy="80" r="70" fill="none" stroke="url(#g1)" stroke-width="2"
                     stroke-linecap="round" stroke-dasharray="280" stroke-dashoffset="80"/>
             </svg>
-            <!-- Inner fast ring -->
             <svg viewBox="0 0 160 160" class="lo-spin-ccw" style="position:absolute;inset:0;transform-origin:80px 80px">
                 <defs>
                     <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -706,6 +898,20 @@
     <script src="../Assets/home.js"></script>
 
     <script>
+    // Logout functions
+    function showLogoutConfirm() {
+        document.getElementById('logoutOverlay').classList.add('show');
+    }
+
+    function hideLogoutConfirm() {
+        document.getElementById('logoutOverlay').classList.remove('show');
+    }
+
+    function confirmLogout() {
+        logout();
+    }
+
+    // Loading overlay
     (function () {
         const form = document.getElementById('interviewForm');
         if (!form) return;
@@ -718,7 +924,6 @@
             'Launching interview…',
         ];
 
-        // Progress keyframes: [time_ms, percent]
         const PROGRESS = [
             [0,    0],
             [400,  18],
@@ -737,7 +942,6 @@
 
             overlay.classList.add('visible');
 
-            // Cycle status messages
             let msgIdx = 0;
             status.textContent = MESSAGES[0];
             const msgTimer = setInterval(() => {
@@ -745,12 +949,10 @@
                 status.textContent = MESSAGES[msgIdx];
             }, 400);
 
-            // Animate progress bar
             PROGRESS.forEach(([ms, pct]) => {
                 setTimeout(() => { bar.style.width = pct + '%'; }, ms);
             });
 
-            // Animate dots sequentially
             let dotIdx = 0;
             const dotTimer = setInterval(() => {
                 dots.forEach(d => d.classList.remove('lit'));
@@ -758,7 +960,6 @@
                 dotIdx++;
             }, 200);
 
-            // Done
             setTimeout(() => {
                 clearInterval(msgTimer);
                 clearInterval(dotTimer);
@@ -768,7 +969,6 @@
         }
 
         form.addEventListener('submit', function handler(e) {
-            // Let browser validate required fields first
             const jobRole    = document.getElementById('jobRole').value.trim();
             const difficulty = document.getElementById('difficulty').value;
             const numQ       = document.getElementById('numQuestions').value;
@@ -778,7 +978,6 @@
             e.preventDefault();
 
             showOverlay(() => {
-                // Remove this interceptor then re-submit for home.js to handle
                 form.removeEventListener('submit', handler);
                 form.requestSubmit ? form.requestSubmit() : form.submit();
             });

@@ -2,92 +2,285 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIRA - Welcome</title>
     <link rel="stylesheet" href="../Components/theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Jersey+10&display=swap');
-        /* 1. Initial State: Solid White Page */
+        :root {
+            --primary: #FF71CE;
+            --secondary: #01CDFE;
+            --accent: #05FFA1;
+            --purple: #B967FF;
+            --dark: #05010D;
+            --text: #FFFB96;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* SCANLINES OVERLAY - from NEONWAVE */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.15) 2px,
+                rgba(0,0,0,0.15) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* HERO - adapted from NEONWAVE */
+        .hero {
+            min-height: 100vh;
+            /* YOUR ORIGINAL GRADIENT */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            display: grid;
+            place-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Grid from NEONWAVE */
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,113,206,0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(1,205,254,0.15) 1px, transparent 1px);
+            background-size: 60px 60px;
+            transform: perspective(600px) rotateX(40deg) translateY(30%);
+            transform-origin: bottom;
+            animation: gridPulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes gridPulse {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+
+        /* White flash */
         .splash-overlay {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            inset: 0;
             background: white;
-            z-index: 999;
+            z-index: 10000;
             animation: fadeToBackground 1.5s ease-in-out forwards;
             pointer-events: none;
         }
+
         @keyframes fadeToBackground {
             0% { opacity: 1; }
             100% { opacity: 0; }
         }
 
-        .start-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
+        .hero-content {
+            position: relative;
             text-align: center;
-            z-index: 10;
+            z-index: 2;
+            padding: 40px;
         }
-        .brand-title {
-            font-family: "Jersey 10", serif;
-            font-size: 100px;
-            font-weight: 900;
-            letter-spacing: 5px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: revealContent 0.8s ease-out 1.2s forwards;
-        }
-        .brand-subtitle {
-            font-family: "Jersey 10", serif;
-            font-size: 52px;
-            font-weight: 300;
-            margin: 20px 0 40px 0;
-            opacity: 0;
-            animation: revealContent 0.8s ease-out 2.2s forwards;
-        }
-        .brand-subsubtitle {
-            font-family: "Jersey 10", serif;
-            font-size: 32px;
-            font-weight: 300;
-            margin: 20px 0 40px 0;
-            opacity: 0;
-            animation: revealContent 0.8s ease-out 3.2s forwards;
-        }
-        .start-btn {
-            padding: 15px 40px;
-            border: 2px solid white;
-            border-radius: 50px;
-            color: white;
-            text-decoration: none;
-            font-weight: 700;
+
+        .hero-eyebrow {
+            font-size: 0.75rem;
+            letter-spacing: 0.5em;
+            color: var(--accent);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0;
-            transition: 0.3s;
-            animation: revealContent 0.8s ease-out 4.0s forwards;
+            margin-bottom: 1rem;
+            animation: fadeDown 0.8s 1.5s ease both;
         }
 
-        .start-btn:hover {
-            background: white;
-            color: #1a1a2e;
-            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+        /* EXACT NEONWAVE TITLE STYLE - ENLARGED */
+        .hero-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(8rem, 25vw, 20rem);
+            line-height: 0.85;
+            color: var(--text);
+            /* EXACT text-shadow from NEONWAVE */
+            text-shadow:
+                0 0 40px rgba(255,113,206,0.8),
+                0 0 80px rgba(185,103,255,0.5),
+                4px 4px 0 var(--primary),
+                8px 8px 0 rgba(185,103,255,0.4);
+            animation: fadeDown 0.8s 1.6s ease both;
         }
 
-        @keyframes revealContent {
-            to { opacity: 1; transform: translateY(0); }
+        .hero-title span {
+            color: var(--primary);
+        }
+
+        .hero-sub {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: rgba(255,251,150,0.7);
+            letter-spacing: 0.15em;
+            line-height: 1.6;
+            animation: fadeDown 0.8s 2.2s ease both;
+        }
+
+        .hero-credits {
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: rgba(255,251,150,0.5);
+            letter-spacing: 0.1em;
+            line-height: 1.8;
+            animation: fadeDown 0.8s 2.8s ease both;
+        }
+
+        .hero-cta {
+            margin-top: 2.5rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeDown 0.8s 3.4s ease both;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* NEONWAVE BUTTON STYLE */
+        .btn {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 0.85rem 2rem;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .btn:hover {
+            transform: translate(-2px, -2px);
+        }
+
+        .btn:active {
+            transform: translate(1px, 1px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--dark);
+            box-shadow: 4px 4px 0 var(--purple);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 6px 6px 0 var(--purple), 0 0 30px rgba(255,113,206,0.5);
+        }
+
+        /* Blobs from your original theme */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .blob-1 {
+            top: -150px;
+            right: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(240,147,251,0.15) 0%, transparent 65%);
+        }
+
+        .blob-2 {
+            bottom: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, transparent 65%);
+        }
+
+        .blob-3 {
+            top: 40%;
+            left: 40%;
+            width: 600px;
+            height: 600px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(185,103,255,0.1) 0%, transparent 60%);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content {
+                padding: 20px;
+            }
+
+            .hero-title {
+                font-size: 4rem;
+            }
+
+            .hero-eyebrow {
+                font-size: 0.65rem;
+            }
+
+            .hero-sub {
+                font-size: 0.75rem;
+            }
+
+            .hero-credits {
+                font-size: 0.65rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.65rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- White flash -->
     <div class="splash-overlay"></div>
 
-    <div class="start-wrapper">
-        <h1 class="brand-title">AIRA</h1>
-        <p class="brand-subtitle">Automated Interview & Response Analyzer</p>
-        <p class="brand-subsubtitle">Created by Neha Babu,Neha Sudheesh, Sadhika Saji, Vishnu Dilish</p>
-        
-        <a href="Login.html?dir=right" class="start-btn">Get Started</a>
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-grid"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">AIRA</h1>
+            <p class="hero-sub">
+                Automated Interview & Response Analyzer
+            </p>
+            <p class="hero-credits">
+                Created by<br>
+                Neha Babu · Neha Sudheesh · Sadhika Saji · Vishnu Dilish
+            </p>
+            <div class="hero-cta">
+                <a href="Login.html" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

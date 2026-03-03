@@ -36,7 +36,7 @@ def convert_numpy_types(obj):
 router = APIRouter(prefix="/api/interview", tags=["interview"])
 
 # Initialize models
-stt               = WhisperSTT(model_size="medium")   # upgraded from base
+stt               = WhisperSTT(model_size="small")   # upgraded from base
 filler_detector   = FillerDetector(strictness="medium")
 emotion_detector  = EmotionDetector()
 relevancy_analyzer = ContentRelevancyAnalyzer()       # ← NEW
@@ -73,16 +73,8 @@ async def analyze_answer(
 
         # ── Step 2: Extract audio and transcribe ──
         print("🎤 Step 1: Extracting audio and transcribing...")
-        audio_path       = audio_extractor.extract_audio(video_path)
-        transcript_result = stt.transcribe_audio(
-            audio_path,
-            language="en",
-            initial_prompt=(
-                "This is a professional job interview. "
-                "The candidate is answering questions about work experience, "
-                "skills, teamwork, and career goals."
-            )
-        )
+        audio_path= audio_extractor.extract_audio(video_path)
+        transcript_result = stt.transcribe_audio(audio_path)
         transcript_text = transcript_result["text"]
         stats           = stt.get_speaking_stats(transcript_result)
 
@@ -259,7 +251,7 @@ def test_interview_api():
     return {
         "message": "Interview API is working!",
         "models": {
-            "whisper":    "medium",
+            "whisper":    "small",
             "relevancy":  "gpt-4o-mini",
             "emotion":    "deepface",
             "fillers":    "custom"

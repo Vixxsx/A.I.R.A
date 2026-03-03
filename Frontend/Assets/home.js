@@ -1,17 +1,13 @@
-// ════════════════════════════════
-//  INIT
-// ════════════════════════════════
 document.addEventListener('DOMContentLoaded', function () {
     checkLoginStatus();
     setupFormHandler();
     loadInterviewHistory();
 });
-
-// ════════════════════════════════
-//  AUTH
-// ════════════════════════════════
 function getCurrentUser() {
-    return localStorage.getItem('aira_user') || sessionStorage.getItem('aira_user');
+    const sessionuser = sessionStorage.getItem('aira_user');
+    if (sessionuser) return sessionuser;
+    const localuser = localStorage.getItem('aira_user');
+    return localuser;
 }
 
 function checkLoginStatus() {
@@ -115,23 +111,44 @@ function buildHistoryCard(interview) {
         F: 'linear-gradient(135deg,#FF71CE,#764ba2)',
     };
     
-    const date = new Date(interview.timestamp).toLocaleDateString('en-US', { 
-        month:'short', day:'numeric', year:'numeric' 
-    });
+    const GRADE_SHADOWS = {
+        S: 'rgba(251,226,56,0.5)',
+        A: 'rgba(5,255,161,0.5)',
+        B: 'rgba(1,205,254,0.5)',
+        C: 'rgba(255,251,150,0.4)',
+        D: 'rgba(244,152,41,0.5)',
+        F: 'rgba(255,113,206,0.5)',
+    };
+    
+    // Use correct field names from backend
+    const grade = interview.grade || 'B';
+    const score = interview.overall_score || 0;  // Backend sends 'overall_score'
+    const role = interview.job_role || 'Interview';
+    
+    const date = interview.timestamp
+        ? new Date(interview.timestamp).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+          })
+        : 'Unknown date';
     
     return `
     <div class="history-card">
-        <div class="history-grade" style="background: ${GRADE_COLOURS[interview.grade]}">
-            ${interview.grade}
-        </div>
+        <div class="history-grade" style="
+            background: ${GRADE_COLOURS[grade] || GRADE_COLOURS['B']};
+            box-shadow: 0 4px 20px ${GRADE_SHADOWS[grade] || 'rgba(1,205,254,0.4)'};
+        ">${grade}</div>
+
         <div class="history-info">
-            <div class="history-role">${interview.job_role}</div>
+            <div class="history-role">${role}</div>
             <div class="history-date">
                 <span>📅 ${date}</span>
             </div>
         </div>
+
         <div class="history-score">
-            <div class="score-value">${interview.overall_score}</div>
+            <div class="score-value">${score}</div>
             <div class="score-label">/ 100</div>
         </div>
     </div>`;
@@ -225,42 +242,6 @@ const GRADE_SHADOWS = {
     D: 'rgba(244,152,41,0.5)',
     F: 'rgba(255,113,206,0.5)',
 };
-
-function buildHistoryCard(entry) {
-    const grade   = entry.grade  || 'B';
-    const score   = entry.overall || 0;
-    const role    = entry.jobRole || 'Interview';
-    const type    = (entry.interviewType || 'mixed').charAt(0).toUpperCase() + (entry.interviewType||'mixed').slice(1);
-    const diff    = (entry.difficulty   || 'intermediate').charAt(0).toUpperCase() + (entry.difficulty||'').slice(1);
-    const date    = entry.timestamp
-        ? new Date(entry.timestamp).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
-        : 'Unknown date';
-    const numQ    = entry.numQuestions || '?';
-
-    return `
-    <div class="history-card">
-        <div class="history-grade" style="
-            background: ${GRADE_COLOURS[grade] || GRADE_COLOURS['B']};
-            box-shadow: 0 4px 20px ${GRADE_SHADOWS[grade] || 'rgba(1,205,254,0.4)'};
-        ">${grade}</div>
-
-        <div class="history-info">
-            <div class="history-role">${role}</div>
-            <div class="history-date">
-                <span>📅 ${date}</span>
-                <span>🎯 ${type}</span>
-                <span>⚡ ${diff}</span>
-                <span>❓ ${numQ} questions</span>
-            </div>
-        </div>
-
-        <div class="history-score">
-            <div class="score-value">${score}</div>
-            <div class="score-label">/ 100</div>
-        </div>
-    </div>`;
-}
-
 // ════════════════════════════════
 //  MODAL
 // ════════════════════════════════
