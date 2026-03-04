@@ -24,13 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load interview settings
     const settings = JSON.parse(sessionStorage.getItem('interviewPreferences') || '{}');
-    
+   
     // Initialize camera
     await initializeCamera();
-    
+   
     // Fetch questions from backend
     await fetchQuestions(settings);
-    
+   
     // Start first question
     startQuestion();
 });
@@ -45,7 +45,7 @@ async function initializeCamera() {
 
         const videoElement = document.getElementById('videoElement');
         videoElement.srcObject = stream;
-        
+       
         console.log('✅ Camera initialized');
     } catch (error) {
         console.error('❌ Camera error:', error);
@@ -56,8 +56,9 @@ async function initializeCamera() {
 
 // ========== FETCH QUESTIONS ==========
 async function fetchQuestions(settings) {
-    showLoading('Generating your interview questions...');
-    
+    // FIXED: Show correct loading message for question generation
+    showLoading('Generating Interview Questions', 'Please be patient...');
+   
     try {
         const response = await fetch(`${API_BASE_URL}/api/questions/generate`, {
             method: 'POST',
@@ -104,10 +105,10 @@ async function startQuestion() {
     // Update UI
     updateProgress();
     displayQuestion();
-    
+   
     // Show countdown (NO DIM OVERLAY)
     await showCountdown();
-    
+   
     // Start recording
     startRecording();
 }
@@ -115,7 +116,7 @@ async function startQuestion() {
 function displayQuestion() {
     const questionNum = currentQuestionIndex + 1;
     const totalQuestions = questions.length;
-    
+   
     document.getElementById('questionNumber').textContent = `Question ${questionNum}`;
     document.getElementById('questionProgress').textContent = `Question ${questionNum} of ${totalQuestions}`;
     document.getElementById('questionText').textContent = questions[currentQuestionIndex];
@@ -130,34 +131,34 @@ function updateProgress() {
 async function showCountdown() {
     const container = document.getElementById('countdownContainer');
     const numberEl = document.getElementById('countdownNumber');
-    
+   
     container.classList.add('active');
-    
+   
     for (let i = COUNTDOWN_DURATION; i > 0; i--) {
         numberEl.textContent = i;
-        
+       
         // Reset animation
         numberEl.style.animation = 'none';
         const ring = container.querySelector('.countdown-ring');
         if (ring) ring.style.animation = 'none';
-        
+       
         // Trigger reflow
         void numberEl.offsetWidth;
-        
+       
         // Restart animation
         numberEl.style.animation = 'numberBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
         if (ring) ring.style.animation = 'ringPulse 1s ease-in-out';
-        
+       
         await sleep(1000);
     }
-    
+   
     container.classList.remove('active');
 }
 
 // ========== RECORDING ==========
 function startRecording() {
     recordedChunks = [];
-    
+   
     // Setup MediaRecorder
     const options = { mimeType: 'video/webm;codecs=vp9,opus' };
     try {
@@ -185,16 +186,16 @@ function startRecording() {
     // Start recording
     mediaRecorder.start();
     isRecording = true;
-    
+   
     // Show recording indicator
     document.getElementById('recordingIndicator').classList.add('active');
-    
+   
     // Show stop button
     document.getElementById('stopBtn').classList.add('show');
-    
+   
     // Start timer
     startTimer();
-    
+   
     console.log('🎥 Recording started');
 }
 
@@ -203,10 +204,10 @@ function stopRecording() {
         mediaRecorder.stop();
         isRecording = false;
         stopTimer();
-        
+       
         // Hide recording indicator
         document.getElementById('recordingIndicator').classList.remove('active');
-        
+       
         // Hide stop button
         document.getElementById('stopBtn').classList.remove('show');
     }
@@ -216,7 +217,7 @@ function stopRecording() {
 function saveVideoLocally() {
     // Create video blob
     const blob = new Blob(recordedChunks, { type: 'video/webm' });
-    
+   
     // Store video with question info
     savedVideos.push({
         questionNumber: currentQuestionIndex + 1,
@@ -224,9 +225,9 @@ function saveVideoLocally() {
         videoBlob: blob,
         timestamp: new Date().toISOString()
     });
-    
+   
     console.log(`✅ Video ${currentQuestionIndex + 1} saved locally`);
-    
+   
     // Move to next question IMMEDIATELY (no backend call yet!)
     currentQuestionIndex++;
     startQuestion();
@@ -234,24 +235,26 @@ function saveVideoLocally() {
 
 // ========== BATCH PROCESSING (AT THE END) ==========
 async function processAllAnswers() {
-    showLoading(`Processing all ${savedVideos.length} answers...`);
-    
+    // FIXED: Show "Analyzing Answer" for batch processing
+    showLoading('Analyzing Answer', `Processing all ${savedVideos.length} answers...`);
+   
     console.log('🔄 Starting batch upload and analysis...');
-    
+   
     const results = [];
-    
+   
     for (let i = 0; i < savedVideos.length; i++) {
         const video = savedVideos[i];
-        
-        showLoading(`Analyzing answer ${i + 1} of ${savedVideos.length}...`);
-        
+       
+        // FIXED: Keep "Analyzing Answer" title, update subtitle
+        showLoading('Analyzing Answer', `Analyzing answer ${i + 1} of ${savedVideos.length}...`);
+       
         try {
             // Create form data
             const formData = new FormData();
             formData.append('video', video.videoBlob, `question_${video.questionNumber}.webm`);
             formData.append('question', video.question);
             formData.append('questionNumber', video.questionNumber);
-            
+           
             // Upload to backend
             const response = await fetch(`${API_BASE_URL}/api/interview/analyze-answer`, {
                 method: 'POST',
@@ -266,30 +269,30 @@ async function processAllAnswers() {
                 console.error(`❌ Failed to analyze answer ${i + 1}`);
                 results.push({ error: 'Analysis failed', questionNumber: video.questionNumber });
             }
-            
+           
         } catch (error) {
             console.error(`❌ Error analyzing answer ${i + 1}:`, error);
             results.push({ error: error.message, questionNumber: video.questionNumber });
         }
     }
-    
+   
     // Store all results
     sessionStorage.setItem('interviewResults', JSON.stringify(results));
-    
+   
     await finishInterview();
 }
 
 // ========== FINISH INTERVIEW ==========
 async function finishInterview() {
-    showLoading('Preparing your scorecard...');
-    
+    showLoading('Analyzing Answer', 'Preparing your scorecard...');
+   
     // Stop camera
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
     }
-    
+   
     await sleep(1500);
-    
+   
     // Redirect to scorecard
     window.location.href = 'scorecard.html';
 }
@@ -298,12 +301,12 @@ async function finishInterview() {
 function startTimer() {
     timeRemaining = QUESTION_TIME_LIMIT;
     updateTimerDisplay();
-    
+   
     timerInterval = setInterval(() => {
         timeRemaining--;
         updateTimerDisplay();
         updateTimerColor();
-        
+       
         if (timeRemaining <= 0) {
             // Time's up!
             stopRecording();
@@ -327,10 +330,10 @@ function updateTimerDisplay() {
 
 function updateTimerColor() {
     const timerEl = document.getElementById('timer');
-    
+   
     // Remove all classes
     timerEl.classList.remove('warning', 'danger');
-    
+   
     if (timeRemaining <= 10) {
         // Dark red + pulsing (0-10 seconds)
         timerEl.classList.add('danger');
@@ -342,8 +345,10 @@ function updateTimerColor() {
 }
 
 // ========== UI HELPERS ==========
-function showLoading(message) {
-    document.getElementById('loadingText').textContent = message;
+function showLoading(title, subtitle) {
+    // Update both title and subtitle
+    document.querySelector('.lo-title').textContent = title;
+    document.getElementById('loadingText').textContent = subtitle;
     document.getElementById('loadingOverlay').classList.add('active');
 }
 

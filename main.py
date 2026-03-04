@@ -48,13 +48,20 @@ app.add_middleware(
 
 # ========== LOAD AI MODELS ==========
 
-print("🎤 Loading Whisper model...")
-stt = WhisperSTT(model_size="small")
-print("✅ Whisper loaded!")
+stt = None
+filler_detector = None
 
-print("🔍 Loading Filler Detector...")
-filler_detector = FillerDetector(strictness="medium")
-print("✅ Filler Detector loaded!")
+@app.on_event("startup")
+async def load_models():
+    global stt, filler_detector
+
+    print("🎤 Loading Whisper model...")
+    stt = WhisperSTT(model_size="small")
+    print("✅ Whisper loaded!")
+
+    print("🔍 Loading Filler Detector...")
+    filler_detector = FillerDetector(strictness="medium")
+    print("✅ Filler Detector loaded!")
 
 # ========== CREATE DIRECTORIES ==========
 
