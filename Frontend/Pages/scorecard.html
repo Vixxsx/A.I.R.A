@@ -1040,15 +1040,74 @@ function fallbackAdv() {
 }
 
 async function fetchAdv(grade, overall) {
-    const res = await fetch('http://localhost:8000/api/feedback/generate', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ scores:{ content:S.content.score, audio:S.audio.score,
-            eye_contact:S.eye_contact.score, body_language:S.emotions.score, overall }, grade,
-            details:{ filler_words:S.audio.fillers, wpm:S.audio.wpm,
-                confidence:S.emotions.confidence, enthusiasm:S.emotions.enthusiasm } })
-    });
-    if (!res.ok) return null;
-    const d = await res.json(); return d.advice||null;
+    // Build strengths and weaknesses arrays for the API
+    const strengths = [];
+    const weaknesses = [];
+    
+    // Content
+    if(S.content.score >= 80) 
+        strengths.push('Strong content - answers address questions directly');
+    else if(S.content.score < 60) 
+        weaknesses.push('Content could be more relevant to questions asked');
+    
+    // Audio
+    if(S.audio.score >= 85) 
+        strengths.push('Excellent audio quality with minimal filler words');
+    else if(S.audio.score < 70) 
+        weaknesses.push('Reduce filler words for cleaner delivery');
+    
+    // Eye Contact
+    if(S.eye_contact.score >= 75) 
+        strengths.push('Good eye contact and camera engagement');
+    else if(S.eye_contact.score < 60) 
+        weaknesses.push('Maintain more consistent eye contact with camera');
+    
+    // Body Language
+    if(S.emotions.confidence === 'High') 
+        strengths.push('Projected strong confidence throughout');
+    else if(S.emotions.confidence === 'Low') 
+        weaknesses.push('Work on appearing more confident on camera');
+    
+    if(S.emotions.enthusiasm === 'High') 
+        strengths.push('High enthusiasm and positive energy');
+    
+    try {
+        const res = await fetch('http://localhost:8000/api/feedback/generate', {
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                scores: { 
+                    content: S.content.score, 
+                    audio: S.audio.score,
+                    eye_contact: S.eye_contact.score, 
+                    body_language: S.emotions.score, 
+                    overall: overall
+                }, 
+                grade: grade,
+                strengths: strengths,
+                weaknesses: weaknesses,
+                details: { 
+                    filler_words: S.audio.fillers, 
+                    wpm: S.audio.wpm,
+                    confidence: S.emotions.confidence, 
+                    enthusiasm: S.emotions.enthusiasm 
+                } 
+            })
+        });
+        
+        if (!res.ok) {
+            console.error('API returned error:', res.status);
+            return null;
+        }
+        
+        const data = await res.json();
+        console.log('✅ API Response:', data);
+        return data.advice || null;
+        
+    } catch(error) {
+        console.error('❌ API Call Failed:', error);
+        return null;
+    }
 }
 
 async function staggerResults(overall) {

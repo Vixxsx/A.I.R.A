@@ -172,5 +172,3 @@ uvicorn==0.38.0
 watchdog==6.0.0
 Werkzeug==3.1.5
 wrapt==2.1.1
-also download ffmpeg and add it to your system path for video processing capabilities.
-and keras and tensorflow are required for deep learning functionalities, so make sure to install them as well.

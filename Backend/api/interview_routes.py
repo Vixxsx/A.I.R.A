@@ -1,19 +1,15 @@
-"""
-Interview Routes - With Content Relevancy Analysis
-"""
-
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional
 import os
 import shutil
 import cv2
 from datetime import datetime
-
 # Import models
 from Backend.Models.whisper_stt import WhisperSTT
 from Backend.Models.filler_word_detection import FillerDetector
 from Backend.Models.emotion_detector import EmotionDetector
-from Backend.Models.Content_Relevancy import ContentRelevancyAnalyzer   # ← NEW
+from Backend.Models.Content_Relevancy import ContentRelevancyAnalyzer
+from Backend.Models.eye_tracker import EyeTracker
 from Backend.Utilities.video_utils import VideoProcessor
 from Backend.Utilities.audio_extract import AudioExtractor
 
@@ -39,7 +35,8 @@ router = APIRouter(prefix="/api/interview", tags=["interview"])
 stt               = WhisperSTT(model_size="small")   # upgraded from base
 filler_detector   = FillerDetector(strictness="medium")
 emotion_detector  = EmotionDetector()
-relevancy_analyzer = ContentRelevancyAnalyzer()       # ← NEW
+relevancy_analyzer = ContentRelevancyAnalyzer()   
+eye_tracker       = EyeTracker()   
 video_processor   = VideoProcessor()
 audio_extractor   = AudioExtractor()
 
@@ -114,13 +111,19 @@ async def analyze_answer(
         )
         print(f"✅ Extracted {len(frame_paths)} frames")
 
+        print("\n👁️ Step 5: Analyzing eye contact...")
+        eye_result    = eye_tracker.analyze_frames_list(frame_paths)
+        eye_summary   = eye_result["summary"]
+        eye_score_100 = round(eye_summary["avg_score"] * 100)
+        print(f"✅ Eye contact score: {eye_score_100}/100 | detection rate: {eye_summary['face_detection_rate']}%")
+
         # ── Step 6: Emotion analysis ──
-        print("\n😊 Step 5: Analyzing emotions...")
+        print("\n😊 Step 6: Analyzing emotions...")
         emotion_results = emotion_detector.analyze_frames_list(frame_paths)
         print("✅ Emotion analysis complete")
 
         # ── Step 7: Calculate scores ──
-        print("\n📊 Step 6: Calculating scores...")
+        print("\n📊 Step 7: Calculating scores...")
 
         # Speaking rate score
         wpm = stats["words_per_minute"]
@@ -154,6 +157,7 @@ async def analyze_answer(
 
         print(f"✅ Scores:")
         print(f"   Content Relevancy: {content_score}/100")
+        print(f"   Eye Contact:       {eye_score_100}/100")
         print(f"   Audio Quality:     {audio_quality_score}/100")
         print(f"   Body Language:     {body_language_score}/100")
 
@@ -201,6 +205,13 @@ async def analyze_answer(
                 "overall_score":       audio_quality_score
             },
 
+            "eye_contact": {
+                "score":                eye_score_100,
+                "avg_score":            eye_summary["avg_score"],
+                "eye_contact_percentage": eye_summary["eye_contact_percentage"],
+                "face_detection_rate":  eye_summary["face_detection_rate"],
+                "feedback":             eye_summary["feedback"]
+            },
             "emotion_analysis": {
                 "dominant_emotion":            dominant_emotion,
                 "dominant_emotion_confidence": round(emotion_distribution[dominant_emotion], 1),
@@ -224,6 +235,7 @@ async def analyze_answer(
                 "content_score":       content_score,
                 "audio_quality_score": audio_quality_score,
                 "body_language_score": body_language_score,
+                "eye_contact_score":   eye_score_100,
                 "emotional_tone":      emotion_summary['emotional_tone'],
                 "cant_answer":         relevancy_result["cant_answer"]
             }
@@ -254,6 +266,7 @@ def test_interview_api():
             "whisper":    "small",
             "relevancy":  "gpt-4o-mini",
             "emotion":    "deepface",
-            "fillers":    "custom"
+            "fillers":    "custom",
+            "eye_tracker": "mediapipe"
         }
     }
