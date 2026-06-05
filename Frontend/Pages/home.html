@@ -895,10 +895,9 @@
         </div>
     </div>
 
-    <script src="../Assets/home.js"></script>
+    <script src="../Assets/js/home.js"></script>
 
     <script>
-    // Logout functions
     function showLogoutConfirm() {
         document.getElementById('logoutOverlay').classList.add('show');
     }
@@ -910,8 +909,6 @@
     function confirmLogout() {
         logout();
     }
-
-    // Loading overlay
     (function () {
         const form = document.getElementById('interviewForm');
         if (!form) return;

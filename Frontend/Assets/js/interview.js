@@ -1,7 +1,7 @@
 // ========== CONFIGURATION ==========
 const API_BASE_URL = 'http://localhost:8000';
-const QUESTION_TIME_LIMIT = 120; // 2 minutes in seconds
-const COUNTDOWN_DURATION = 5; // 5 seconds before each question
+const QUESTION_TIME_LIMIT = 120; 
+const COUNTDOWN_DURATION = 5; 
 
 // ========== STATE ==========
 let stream = null;
@@ -12,26 +12,21 @@ let questions = [];
 let timerInterval = null;
 let timeRemaining = QUESTION_TIME_LIMIT;
 let isRecording = false;
-let savedVideos = []; // Store all recorded videos for batch processing
+let savedVideos = []; 
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if user came from test page
     if (!sessionStorage.getItem('mediaReady')) {
         window.location.href = 'interview_test.html';
         return;
     }
 
-    // Load interview settings
     const settings = JSON.parse(sessionStorage.getItem('interviewPreferences') || '{}');
-   
-    // Initialize camera
+
     await initializeCamera();
-   
-    // Fetch questions from backend
+
     await fetchQuestions(settings);
-   
-    // Start first question
+
     startQuestion();
 });
 
@@ -56,7 +51,6 @@ async function initializeCamera() {
 
 // ========== FETCH QUESTIONS ==========
 async function fetchQuestions(settings) {
-    // FIXED: Show correct loading message for question generation
     showLoading('Generating Interview Questions', 'Please be patient...');
    
     try {
@@ -79,7 +73,7 @@ async function fetchQuestions(settings) {
         console.error('❌ Failed to fetch questions:', error);
     }
 
-    // Fallback demo questions if API fails
+    // Fallback demo questions
     if (questions.length === 0) {
         questions = [
             "Tell me about your experience with the technologies mentioned in your resume.",
@@ -97,19 +91,12 @@ async function fetchQuestions(settings) {
 // ========== QUESTION FLOW ==========
 async function startQuestion() {
     if (currentQuestionIndex >= questions.length) {
-        // All questions recorded! Now process everything
         await processAllAnswers();
         return;
     }
-
-    // Update UI
     updateProgress();
     displayQuestion();
-   
-    // Show countdown (NO DIM OVERLAY)
     await showCountdown();
-   
-    // Start recording
     startRecording();
 }
 
@@ -136,16 +123,10 @@ async function showCountdown() {
    
     for (let i = COUNTDOWN_DURATION; i > 0; i--) {
         numberEl.textContent = i;
-       
-        // Reset animation
         numberEl.style.animation = 'none';
         const ring = container.querySelector('.countdown-ring');
         if (ring) ring.style.animation = 'none';
-       
-        // Trigger reflow
         void numberEl.offsetWidth;
-       
-        // Restart animation
         numberEl.style.animation = 'numberBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
         if (ring) ring.style.animation = 'ringPulse 1s ease-in-out';
        
@@ -158,8 +139,6 @@ async function showCountdown() {
 // ========== RECORDING ==========
 function startRecording() {
     recordedChunks = [];
-   
-    // Setup MediaRecorder
     const options = { mimeType: 'video/webm;codecs=vp9,opus' };
     try {
         mediaRecorder = new MediaRecorder(stream, options);
@@ -182,18 +161,10 @@ function startRecording() {
         console.log('✅ Recording stopped');
         saveVideoLocally();
     };
-
-    // Start recording
     mediaRecorder.start();
     isRecording = true;
-   
-    // Show recording indicator
     document.getElementById('recordingIndicator').classList.add('active');
-   
-    // Show stop button
     document.getElementById('stopBtn').classList.add('show');
-   
-    // Start timer
     startTimer();
    
     console.log('🎥 Recording started');
@@ -204,21 +175,14 @@ function stopRecording() {
         mediaRecorder.stop();
         isRecording = false;
         stopTimer();
-       
-        // Hide recording indicator
         document.getElementById('recordingIndicator').classList.remove('active');
-       
-        // Hide stop button
         document.getElementById('stopBtn').classList.remove('show');
     }
 }
 
 // ========== SAVE VIDEO LOCALLY (BATCH STRATEGY) ==========
 function saveVideoLocally() {
-    // Create video blob
     const blob = new Blob(recordedChunks, { type: 'video/webm' });
-   
-    // Store video with question info
     savedVideos.push({
         questionNumber: currentQuestionIndex + 1,
         question: questions[currentQuestionIndex],
@@ -232,10 +196,8 @@ function saveVideoLocally() {
     currentQuestionIndex++;
     startQuestion();
 }
-
 // ========== BATCH PROCESSING (AT THE END) ==========
 async function processAllAnswers() {
-    // FIXED: Show "Analyzing Answer" for batch processing
     showLoading('Analyzing Answer', `Processing all ${savedVideos.length} answers...`);
    
     console.log('🔄 Starting batch upload and analysis...');
@@ -244,18 +206,13 @@ async function processAllAnswers() {
    
     for (let i = 0; i < savedVideos.length; i++) {
         const video = savedVideos[i];
-       
-        // FIXED: Keep "Analyzing Answer" title, update subtitle
         showLoading('Analyzing Answer', `Analyzing answer ${i + 1} of ${savedVideos.length}...`);
        
         try {
-            // Create form data
             const formData = new FormData();
             formData.append('video', video.videoBlob, `question_${video.questionNumber}.webm`);
             formData.append('question', video.question);
             formData.append('questionNumber', video.questionNumber);
-           
-            // Upload to backend
             const response = await fetch(`${API_BASE_URL}/api/interview/analyze-answer`, {
                 method: 'POST',
                 body: formData
@@ -275,8 +232,6 @@ async function processAllAnswers() {
             results.push({ error: error.message, questionNumber: video.questionNumber });
         }
     }
-   
-    // Store all results
     sessionStorage.setItem('interviewResults', JSON.stringify(results));
    
     await finishInterview();
@@ -285,15 +240,11 @@ async function processAllAnswers() {
 // ========== FINISH INTERVIEW ==========
 async function finishInterview() {
     showLoading('Analyzing Answer', 'Preparing your scorecard...');
-   
-    // Stop camera
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
     }
    
     await sleep(1500);
-   
-    // Redirect to scorecard
     window.location.href = 'scorecard.html';
 }
 
@@ -308,7 +259,6 @@ function startTimer() {
         updateTimerColor();
        
         if (timeRemaining <= 0) {
-            // Time's up!
             stopRecording();
         }
     }, 1000);
@@ -330,28 +280,21 @@ function updateTimerDisplay() {
 
 function updateTimerColor() {
     const timerEl = document.getElementById('timer');
-   
-    // Remove all classes
     timerEl.classList.remove('warning', 'danger');
-   
     if (timeRemaining <= 10) {
-        // Dark red + pulsing (0-10 seconds)
         timerEl.classList.add('danger');
     } else if (timeRemaining <= 30) {
-        // Light red (11-30 seconds)
         timerEl.classList.add('warning');
     }
-    // else: white (normal)
 }
 
 // ========== UI HELPERS ==========
 function showLoading(title, subtitle) {
-    // Update both title and subtitle
+
     document.querySelector('.lo-title').textContent = title;
     document.getElementById('loadingText').textContent = subtitle;
     document.getElementById('loadingOverlay').classList.add('active');
 }
-
 function hideLoading() {
     document.getElementById('loadingOverlay').classList.remove('active');
 }
@@ -365,7 +308,6 @@ document.getElementById('stopBtn').addEventListener('click', () => {
     stopRecording();
 });
 
-// Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -373,7 +315,6 @@ window.addEventListener('beforeunload', () => {
     stopTimer();
 });
 
-// Prevent accidental page close during interview
 window.addEventListener('beforeunload', (e) => {
     if (currentQuestionIndex > 0 && currentQuestionIndex < questions.length) {
         e.preventDefault();

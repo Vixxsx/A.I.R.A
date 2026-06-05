@@ -666,10 +666,8 @@
 </div>
 
 <script>
-// ════════════════════════════════
-//  DATA
-// ════════════════════════════════
-let S = null; // scoreData
+// ==========  DATA ==========
+let S = null; 
 
 function loadData() {
     try {
@@ -688,24 +686,18 @@ function calcAvg(results) {
     
     results.forEach(r => {
         if (!r.success) return;
-        
-        // CONTENT - Use ACTUAL relevancy score if available
         if (r.content_relevancy && typeof r.content_relevancy.score === 'number') {
-            // Use the real backend score!
             tC += r.content_relevancy.score;
             cC++;
         } else if (r.transcript) {
-            // Fallback only if content_relevancy doesn't exist
             const wc = r.transcript.word_count || 0;
             const dur = r.transcript.duration_seconds || 1;
-            let s = 75; // Decent base
+            let s = 75; 
             if (wc >= 40 && wc <= 300) s += 10;
             if (dur >= 20 && dur <= 150) s += 10;
             tC += s;
             cC++;
         }
-        
-        // AUDIO
         if (r.audio_quality) {
             tA += r.audio_quality.overall_score;
             aC++;
@@ -718,17 +710,13 @@ function calcAvg(results) {
                 wN++;
             }
         }
-        
-        // EYE CONTACT
         if (r.eye_contact && typeof r.eye_contact.score === 'number') {
             tE += r.eye_contact.score;
             eC++;
         } else {
-            tE += 70; // Default
+            tE += 70;
             eC++;
         }
-        
-        // BODY LANGUAGE / EMOTIONS
         if (r.body_language) {
             tB += r.body_language.score;
             bC++;
@@ -738,8 +726,6 @@ function calcAvg(results) {
             }
         }
     });
-    
-    // Calculate averages
     const c = cC > 0 ? Math.round(tC / cC) : 70;
     const a = aC > 0 ? Math.round(tA / aC) : 75;
     const e = eC > 0 ? Math.round(tE / eC) : 70;
@@ -796,20 +782,16 @@ function demo() {
     };
 }
 
-// ════════════════════════════════
-//  INIT
-// ════════════════════════════════
-const CIRC = 2 * Math.PI * 70; // r=70 → 439.82
+//========== INIT ==========
+const CIRC = 2 * Math.PI * 70; 
 
 function init() {
     particles();
     loadData();
     fillDetails();
-    // Stagger segments in
     ['content','audio','eye','emotion'].forEach((k,i) => {
         setTimeout(() => document.getElementById('seg-'+k).classList.add('in'), 180 + i*140);
     });
-    // Animate arcs
     setTimeout(animArcs, 850);
 }
 
@@ -859,12 +841,8 @@ function toggleDetail(k) {
     document.getElementById('detail-'+k).classList.toggle('open');
 }
 
-// ════════════════════════════════
-//  AUDIO
-// ════════════════════════════════
+//========== AUDIO ==========
 const GRADES = ['F','D','C','B','A','S'];
-
-// Preload all grade sounds on page load so they fire instantly
 const audioCache = {};
 GRADES.forEach(g => {
     audioCache[g] = new Audio(`${g}.mp3`);
@@ -878,9 +856,7 @@ function playSound(grade) {
     } catch(e) { console.log('Audio error:', e); }
 }
 
-// ════════════════════════════════
-//  GRADE REVEAL
-// ════════════════════════════════
+//========== GRADE REVEAL ==========
 async function saveInterviewSummary(grade, score) {
     const username = sessionStorage.getItem('aira_user') || localStorage.getItem('aira_user');
     const jobRole = JSON.parse(sessionStorage.getItem('interviewPreferences') || '{}').jobRole || 'Unknown';
@@ -920,17 +896,11 @@ async function startReveal() {
         S.eye_contact.score*.25 + S.emotions.score*.20
     );
     const grade = toGrade(overall);
-
-    // Exit page 1
     document.getElementById('page-scores').classList.add('exit');
     await wait(500);
-
-    // Show overlay
     const go = document.getElementById('go');
     go.classList.add('show');
     await wait(280);
-
-    // Cycle grades — play each grade's sound as it appears
     const fi = GRADES.indexOf(grade);
     const el = document.getElementById('goLetter');
     for (let i=0; i<=fi; i++) {
@@ -941,13 +911,9 @@ async function startReveal() {
         if (last) { await wait(180); flash(); }
         await wait(last ? 1200 : 450);
     }
-
-    // Hide overlay
     go.classList.remove('show'); go.classList.add('hide');
     await wait(480);
     go.classList.remove('hide');
-
-    // Build results and transition
     buildResults(grade, overall);
     await saveInterviewSummary(grade, overall);
     await wait(80);
@@ -969,9 +935,7 @@ function flash() {
     setTimeout(() => f.classList.remove('pop'), 380);
 }
 
-// ════════════════════════════════
-//  BUILD RESULTS
-// ════════════════════════════════
+//========== BUILD RESULTS ==========
 const GC = { S:'#fbe238', A:'#05FFA1', B:'#01CDFE', C:'#FFFB96', D:'#f49829', F:'#FF71CE' };
 const GM = {
     S:'🌟 LEGENDARY · PERFECT 🌟',   A:'✨ EXCELLENT · OUTSTANDING ✨',
@@ -986,8 +950,6 @@ function buildResults(grade, overall) {
     b.style.textShadow = `0 0 55px ${GC[grade]}`;
     document.getElementById('ghScore').textContent = overall;
     document.getElementById('ghMsg').textContent   = GM[grade];
-
-    // Strengths / weaknesses
     const str=[], wk=[];
     if(S.content.score>=80)       str.push({i:'✅',t:'Strong content — answers address questions directly'});
     else if(S.content.score<60)   wk.push( {i:'📈',t:'Content could be more relevant to questions asked'});
@@ -998,15 +960,10 @@ function buildResults(grade, overall) {
     if(S.emotions.confidence==='High')  str.push({i:'✅',t:'Projected strong confidence throughout'});
     else if(S.emotions.confidence==='Low') wk.push({i:'📈',t:'Work on appearing more confident on camera'});
     if(S.emotions.enthusiasm==='High')  str.push({i:'✅',t:'High enthusiasm and positive energy'});
-
     fillList('strengthsList', str.length ? str : [{i:'💪',t:"Keep practising — you'll get there!"}], 'ins');
     fillList('weaknessesList', wk.length ? wk  : [{i:'🎉',t:'No major weaknesses detected!'}], 'ins');
-
-    // Advice
     const adv = fallbackAdv();
     fillList('adviceList', adv.map(t=>({t})), 'adv');
-
-    // Async replace advice if API available
     fetchAdv(grade, overall).then(a => {
         if (a?.length) {
             fillList('adviceList', a.map(t=>({t})), 'adv');
@@ -1040,37 +997,27 @@ function fallbackAdv() {
 }
 
 async function fetchAdv(grade, overall) {
-    // Build strengths and weaknesses arrays for the API
     const strengths = [];
     const weaknesses = [];
-    
-    // Content
     if(S.content.score >= 80) 
         strengths.push('Strong content - answers address questions directly');
     else if(S.content.score < 60) 
         weaknesses.push('Content could be more relevant to questions asked');
-    
-    // Audio
     if(S.audio.score >= 85) 
         strengths.push('Excellent audio quality with minimal filler words');
     else if(S.audio.score < 70) 
         weaknesses.push('Reduce filler words for cleaner delivery');
-    
-    // Eye Contact
     if(S.eye_contact.score >= 75) 
         strengths.push('Good eye contact and camera engagement');
     else if(S.eye_contact.score < 60) 
         weaknesses.push('Maintain more consistent eye contact with camera');
-    
-    // Body Language
     if(S.emotions.confidence === 'High') 
         strengths.push('Projected strong confidence throughout');
     else if(S.emotions.confidence === 'Low') 
         weaknesses.push('Work on appearing more confident on camera');
     
     if(S.emotions.enthusiasm === 'High') 
-        strengths.push('High enthusiasm and positive energy');
-    
+        strengths.push('High enthusiasm and positive energy');   
     try {
         const res = await fetch('http://localhost:8000/api/feedback/generate', {
             method: 'POST', 
@@ -1112,12 +1059,10 @@ async function fetchAdv(grade, overall) {
 
 async function staggerResults(overall) {
     await wait(200);
-    // Cards
     ['rc-s','rc-w','rc-a'].forEach((id,i) => {
         setTimeout(() => document.getElementById(id).classList.add('in'), i*160);
     });
     await wait(520);
-    // List items
     document.querySelectorAll('.ins-list li').forEach((li,i) => {
         setTimeout(() => li.classList.add('in'), i*110);
     });
@@ -1126,7 +1071,6 @@ async function staggerResults(overall) {
     });
     await wait(350);
     document.getElementById('resActions').classList.add('in');
-    // Animate score number
     countUp2('ghScore', overall);
 }
 
@@ -1137,9 +1081,7 @@ function countUp2(id, target) {
     const iv=setInterval(()=>{ v=Math.min(v+step,target); el.textContent=Math.round(v); if(v>=target) clearInterval(iv); },38);
 }
 
-// ════════════════════════════════
-//  PARTICLES
-// ════════════════════════════════
+//========== PARTICLES ==========
 function particles() {
     const c = document.getElementById('particles');
     for (let i=0; i<32; i++) {

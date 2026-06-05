@@ -25,9 +25,7 @@ function logout() {
     window.location.href = 'Login.html';
 }
 
-// ════════════════════════════════
-//  FORM HANDLER
-// ════════════════════════════════
+//========== FORM HANDLER ==========
 function setupFormHandler() {
     const form = document.getElementById('interviewForm');
 
@@ -47,8 +45,6 @@ function setupFormHandler() {
             showMessage('Number of questions must be between 1 and 20', 'error');
             return;
         }
-
-        // Save preferences — jobRole saved separately so Interview page can pass it to API
         const interviewPreferences = {
             jobRole,
             difficulty,
@@ -68,9 +64,8 @@ function setupFormHandler() {
     });
 }
 
-// ════════════════════════════════
-//  INTERVIEW HISTORY
-// ════════════════════════════════
+
+//========== INTERVIEW HISTORY ==========
 async function loadInterviewHistory() {
     const username = getCurrentUser();
     const section = document.getElementById('historySection');
@@ -119,8 +114,6 @@ function buildHistoryCard(interview) {
         D: 'rgba(244,152,41,0.5)',
         F: 'rgba(255,113,206,0.5)',
     };
-    
-    // Use correct field names from backend
     const grade = interview.grade || 'B';
     const score = interview.overall_score || 0;  // Backend sends 'overall_score'
     const role = interview.job_role || 'Interview';
@@ -155,7 +148,7 @@ function buildHistoryCard(interview) {
 }
 
 function getInterviewHistory() {
-    // Try to load from localStorage (persists across sessions)
+    // Try to load from localStorage
     try {
         const raw = localStorage.getItem('aira_interview_history');
         if (raw) return JSON.parse(raw);
@@ -190,7 +183,6 @@ function calcOverall(results) {
     let tC=0,tA=0,tE=0,tB=0, cC=0,aC=0,eC=0,bC=0;
     results.forEach(r => {
         if (!r.success) return;
-        // Content
         if (r.content_relevancy) { tC += r.content_relevancy.score; cC++; }
         else if (r.transcript) {
             const wc = r.transcript.word_count||0, dur = r.transcript.duration_seconds||1;
@@ -210,8 +202,6 @@ function scoreToGrade(s) {
     if(s>=70) return 'B'; if(s>=60) return 'C';
     if(s>=50) return 'D'; return 'F';
 }
-
-// Call this from Scorecard page after interview to persist history
 function saveInterviewToHistory(entry) {
     try {
         const raw     = localStorage.getItem('aira_interview_history');
@@ -242,9 +232,7 @@ const GRADE_SHADOWS = {
     D: 'rgba(244,152,41,0.5)',
     F: 'rgba(255,113,206,0.5)',
 };
-// ════════════════════════════════
-//  MODAL
-// ════════════════════════════════
+// ==========  MODAL ==========
 function openModal() {
     document.getElementById('aboutModal').style.display = 'block';
 }
@@ -257,10 +245,7 @@ window.onclick = function (event) {
     const modal = document.getElementById('aboutModal');
     if (event.target === modal) closeModal();
 };
-
-// ════════════════════════════════
-//  MESSAGE HELPER
-// ════════════════════════════════
+// ==========  MESSAGE HELPER ==========
 function showMessage(text, type) {
     const el = document.getElementById('message');
     el.textContent   = text;

@@ -5,7 +5,6 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
-
 load_dotenv()
 
 router = APIRouter(prefix="/api/feedback", tags=["feedback"])
