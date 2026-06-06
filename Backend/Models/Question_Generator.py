@@ -10,7 +10,6 @@ load_dotenv()
 
 class QuestionGenerator:
     def __init__(self):
-
         self.api_key = os.getenv('OPENAI_API_KEY')
 
         if self.api_key:
@@ -24,78 +23,65 @@ class QuestionGenerator:
                 self.use_ai = False
         else:
             print("⚠️  OPENAI_API_KEY not found in environment")
-            print("   Using template questions")
             self.client = None
             self.use_ai = False
 
         self.template_questions = self._load_templates()
-        self.history_file = "Data/question_history.json"
-        os.makedirs("Data", exist_ok=True)
 
-
-    def generate_questions(self, profile: Optional[Dict] = None, num_questions: int = 5) -> List[Dict]:
+    def generate_questions(self, profile: Optional[Dict] = None, num_questions: int = 5, interview_type: str = 'mixed') -> List[Dict]:
         if profile is None:
             profile = {
                 'job_role':       'Software Engineer',
                 'degree':         'Computer Science',
                 'difficulty':     'intermediate',
                 'company_type':   'Tech Company',
-                'interview_type': 'mixed'
+                'interview_type': interview_type
             }
+
+        if 'interview_type' not in profile:
+            profile['interview_type'] = interview_type
+
+        username = profile.get('username', None)
 
         if self.use_ai and self.client:
             try:
-                questions = self._generate_with_openai(profile, num_questions)
-                # Save to history to avoid future repeats
-                self._save_to_history([q['question'] for q in questions])
+                questions = self._generate_with_openai(profile, num_questions, username)
+                self._save_to_history(username, [q['question'] for q in questions], profile.get('interview_type'), profile.get('job_role'))
                 return questions
             except Exception as e:
                 print(f"⚠️  OpenAI generation failed: {e}")
-                print("   Falling back to templates")
                 return self._generate_from_templates(profile, num_questions)
         else:
             return self._generate_from_templates(profile, num_questions)
 
-
-    def _load_question_history(self) -> List[str]:
-        """Load recently asked questions to avoid repeats"""
+    def _load_question_history(self, username: str = None) -> List[str]:
         try:
-            if os.path.exists(self.history_file):
-                with open(self.history_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+            from Backend.Utilities.database import db
+            if username:
+                return db.get_recent_questions(username, limit=30)
+            return []
         except Exception as e:
             print(f"⚠️  Could not load question history: {e}")
-        return []
+            return []
 
-
-    def _save_to_history(self, questions: List[str]):
-        """Save questions to history (keep last 100)"""
+    def _save_to_history(self, username: str = None, questions: List[str] = [], category: str = None, job_role: str = None):
         try:
-            history = self._load_question_history()
-            history.extend(questions)
-            # Keep only last 100 questions
-            history = history[-100:]
-            with open(self.history_file, 'w', encoding='utf-8') as f:
-                json.dump(history, f, indent=2, ensure_ascii=False)
+            from Backend.Utilities.database import db
+            if username and questions:
+                db.save_questions(username, questions, category, job_role)
         except Exception as e:
             print(f"⚠️  Could not save question history: {e}")
 
-
-    def _generate_with_openai(self, profile: Dict, num_questions: int) -> List[Dict]:
-
+    def _generate_with_openai(self, profile: Dict, num_questions: int, username: str = None) -> List[Dict]:
         interview_type = profile.get('interview_type', 'mixed').lower()
         job_role       = profile.get('job_role',       'Software Engineer')
         difficulty     = profile.get('difficulty',     'intermediate')
         degree         = profile.get('degree',         'Computer Science')
         company_type   = profile.get('company_type',   'Tech Company')
 
-        # Load recently asked questions
-        recent_questions = self._load_question_history()[-30:]  # Last 30 questions
-       
-        # Random seed for variety
+        recent_questions = self._load_question_history(username)
         random_seed = random.randint(1, 1000000)
 
-        # Dynamic system prompt
         system_prompt = (
             f"You are a creative and experienced interviewer for {job_role} positions. "
             f"Generate UNIQUE, VARIED, and THOUGHTFUL questions. "
@@ -103,7 +89,6 @@ class QuestionGenerator:
             f"Return only valid raw JSON — no markdown, no code fences, no explanation."
         )
 
-        # Type instructions
         type_instructions = {
             'behavioral': (
                 "Generate ONLY behavioral questions answerable in STAR format. "
@@ -131,7 +116,6 @@ class QuestionGenerator:
 
         type_instruction = type_instructions.get(interview_type, type_instructions['mixed'])
 
-        # Build exclusion list
         exclusion_text = ""
         if recent_questions:
             exclusion_text = f"""
@@ -183,19 +167,13 @@ Return ONLY a raw JSON array. No markdown. No explanation. No code fences:
         response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": prompt}
             ],
-            temperature=1.1,  # ← INCREASED from 0.7 for more creativity!
+            temperature=1.1,
             max_tokens=1500,
-            presence_penalty=0.6,  # ← Encourages diverse topics
-            frequency_penalty=0.3   # ← Reduces repetition
+            presence_penalty=0.6,
+            frequency_penalty=0.3
         )
 
         content = response.choices[0].message.content.strip()
@@ -210,17 +188,9 @@ Return ONLY a raw JSON array. No markdown. No explanation. No code fences:
         print(f"✅ Generated {len(questions)} unique questions")
         return questions
 
-
     def _generate_from_templates(self, profile: Dict, num_questions: int) -> List[Dict]:
-        """
-        Generate questions from templates with proper type enforcement
-        - mixed: EXACTLY 50/50 split between technical and behavioral
-        - technical: 80% technical, 20% behavioral
-        - behavioral: 80% behavioral, 20% technical
-        """
         print(f"📝 Generating {num_questions} questions from templates...")
 
-        job_role       = profile.get('job_role',       'Software Engineer')
         difficulty     = profile.get('difficulty',     'intermediate')
         interview_type = profile.get('interview_type', 'mixed').lower()
 
@@ -231,81 +201,40 @@ Return ONLY a raw JSON array. No markdown. No explanation. No code fences:
         }
         allowed = difficulty_map.get(difficulty.lower(), ['easy', 'medium'])
 
-        if interview_type == 'mixed':
-            # ENFORCE 50/50 SPLIT
-            tech_pool = [q for q in self.template_questions['technical']
-                         if q['difficulty'] in allowed]
-            behav_pool = [q for q in (self.template_questions['behavioral'] +
-                                      self.template_questions['situational'])
-                          if q['difficulty'] in allowed]
-           
-            # Calculate split
-            tech_count = num_questions // 2
-            behav_count = num_questions - tech_count
-           
-            # Sample from each pool
-            tech_selected = random.sample(tech_pool, min(tech_count, len(tech_pool)))
-            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
-           
-            # Combine and shuffle
-            selected = tech_selected + behav_selected
-            random.shuffle(selected)
-           
-            # Add IDs
-            for i, q in enumerate(selected, 1):
-                q['id'] = i
-           
-            print(f"✅ Selected {len(tech_selected)} technical + {len(behav_selected)} behavioral = {len(selected)} total")
-            return selected
-           
-        elif interview_type == 'technical':
-            # 80% technical, 20% behavioral
-            tech_pool = [q for q in self.template_questions['technical']
-                         if q['difficulty'] in allowed]
-            behav_pool = [q for q in self.template_questions['behavioral']
-                          if q['difficulty'] in allowed]
-           
-            tech_count = int(num_questions * 0.8)
-            behav_count = num_questions - tech_count
-           
-            tech_selected = random.sample(tech_pool, min(tech_count, len(tech_pool)))
-            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
-           
-            selected = tech_selected + behav_selected
-            random.shuffle(selected)
-           
-        elif interview_type == 'behavioral':
-            # 80% behavioral, 20% technical
-            behav_pool = [q for q in (self.template_questions['behavioral'] +
-                                      self.template_questions['situational'])
-                          if q['difficulty'] in allowed]
-            tech_pool = [q for q in self.template_questions['technical']
-                         if q['difficulty'] in allowed]
-           
-            behav_count = int(num_questions * 0.8)
-            tech_count = num_questions - behav_count
-           
-            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
-            tech_selected = random.sample(tech_pool, min(tech_count, len(tech_pool)))
-           
-            selected = behav_selected + tech_selected
-            random.shuffle(selected)
-           
-        else:
-            # Fallback
-            all_questions = (self.template_questions['technical'] +
-                           self.template_questions['behavioral'] +
-                           self.template_questions['situational'])
-            filtered = [q for q in all_questions if q['difficulty'] in allowed]
-            selected = random.sample(filtered, min(num_questions, len(filtered)))
+        if interview_type == 'technical':
+            tech_pool = [q for q in self.template_questions['technical'] if q['difficulty'] in allowed]
+            selected  = random.sample(tech_pool, min(num_questions, len(tech_pool)))
+            while len(selected) < num_questions:
+                selected.append(random.choice(tech_pool))
+            print(f"✅ Selected {len(selected)} technical questions")
 
-        # Add IDs
+        elif interview_type == 'behavioral':
+            behav_pool = [q for q in (self.template_questions['behavioral'] + self.template_questions['situational']) if q['difficulty'] in allowed]
+            selected   = random.sample(behav_pool, min(num_questions, len(behav_pool)))
+            while len(selected) < num_questions:
+                selected.append(random.choice(behav_pool))
+            print(f"✅ Selected {len(selected)} behavioral questions")
+
+        elif interview_type == 'mixed':
+            tech_pool  = [q for q in self.template_questions['technical']  if q['difficulty'] in allowed]
+            behav_pool = [q for q in (self.template_questions['behavioral'] + self.template_questions['situational']) if q['difficulty'] in allowed]
+            tech_count  = num_questions // 2
+            behav_count = num_questions - tech_count
+            tech_selected  = random.sample(tech_pool,  min(tech_count,  len(tech_pool)))
+            behav_selected = random.sample(behav_pool, min(behav_count, len(behav_pool)))
+            selected = tech_selected + behav_selected
+            random.shuffle(selected)
+            print(f"✅ Selected {len(tech_selected)} technical + {len(behav_selected)} behavioral = {len(selected)} total")
+
+        else:
+            all_questions = self.template_questions['technical'] + self.template_questions['behavioral'] + self.template_questions['situational']
+            filtered  = [q for q in all_questions if q['difficulty'] in allowed]
+            selected  = random.sample(filtered, min(num_questions, len(filtered)))
+
         for i, q in enumerate(selected, 1):
             q['id'] = i
 
-        print(f"✅ Selected {len(selected)} {interview_type} questions")
         return selected
-
 
     def _load_templates(self) -> Dict:
         return {
@@ -341,14 +270,10 @@ Return ONLY a raw JSON array. No markdown. No explanation. No code fences:
         }
 
 
-# ========== CONVENIENCE FUNCTION ==========
-
-def quick_generate(num_questions: int = 5) -> List[Dict]:
+def quick_generate(num_questions: int = 5, interview_type: str = 'mixed') -> List[Dict]:
     generator = QuestionGenerator()
-    return generator.generate_questions(num_questions=num_questions)
+    return generator.generate_questions(num_questions=num_questions, interview_type=interview_type)
 
-
-# ========== TEST ==========
 
 if __name__ == "__main__":
     print("\n🎯 Testing Question Generator\n")

@@ -12,9 +12,7 @@
             overflow-y: auto;
         }
 
-        .grid-bg {
-            display: none;
-        }
+        .grid-bg { display: none; }
 
         .login-wrapper {
             display: grid;
@@ -22,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* ── LEFT SIDE ── */
         .features-side {
             display: flex;
             flex-direction: column;
@@ -32,9 +29,7 @@
             backdrop-filter: blur(10px);
         }
 
-        .brand-section {
-            margin-bottom: 40px;
-        }
+        .brand-section { margin-bottom: 40px; }
 
         .brand-icon {
             font-size: 48px;
@@ -59,9 +54,7 @@
             line-height: 1.6;
         }
 
-        .features-list {
-            list-style: none;
-        }
+        .features-list { list-style: none; }
 
         .features-list li {
             padding: 16px 0;
@@ -87,26 +80,18 @@
             flex-shrink: 0;
         }
 
-        /* ── RIGHT SIDE — neon green dark bg ── */
         .form-side {
             display: flex;
             align-items: flex-start;
             justify-content: center;
             padding: 60px 40px;
-            overflow-y: auto;
             min-height: 100vh;
-            background: linear-gradient(160deg,
-                #001208 0%,
-                #001f0e 35%,
-                #000d07 65%,
-                #001a0c 100%
-            );
+            background: linear-gradient(160deg, #001208 0%, #001f0e 35%, #000d07 65%, #001a0c 100%);
             position: relative;
             overflow-x: hidden;
             overflow-y: auto;
         }
 
-        /* Scanline CRT overlay */
         .form-side::before {
             content: '';
             position: absolute;
@@ -123,7 +108,6 @@
             opacity: 0.6;
         }
 
-        /* Neon green grid mesh */
         .form-side::after {
             content: '';
             position: absolute;
@@ -136,7 +120,6 @@
             z-index: 1;
         }
 
-        /* Neon glow blobs */
         .glow-blob-1 {
             position: absolute;
             top: -100px; right: -100px;
@@ -168,16 +151,12 @@
             z-index: 1;
         }
 
-        /* ── FORM CONTAINER ── */
         .form-container {
             position: relative;
             z-index: 2;
             width: 100%;
             max-width: 450px;
-            /* scrollable for taller register form */
-            overflow-y: visible;
         }
-
 
         .form-header {
             text-align: center;
@@ -203,10 +182,7 @@
             color: rgba(255, 251, 150, 0.5);
         }
 
-        /* ── FORM FIELDS ── */
-        .form-group {
-            margin-bottom: 18px;
-        }
+        .form-group { margin-bottom: 18px; }
 
         .form-group label {
             display: block;
@@ -218,9 +194,7 @@
             text-transform: uppercase;
         }
 
-        .input-container {
-            position: relative;
-        }
+        .input-container { position: relative; }
 
         .field-icon {
             position: absolute;
@@ -232,9 +206,24 @@
             z-index: 1;
         }
 
+        /* ✅ Eye toggle button */
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 2;
+            padding: 0;
+            line-height: 1;
+        }
+
         .input-container input {
             width: 100%;
-            padding: 13px 14px 13px 45px;
+            padding: 13px 44px 13px 45px;
             border: 2px solid var(--secondary);
             border-radius: 8px;
             font-size: 15px;
@@ -243,11 +232,10 @@
             transition: all 0.3s ease;
             font-family: var(--font-body);
             box-shadow: inset 0 0 10px rgba(1, 205, 254, 0.1);
+            box-sizing: border-box;
         }
 
-        .input-container input::placeholder {
-            color: rgba(255, 251, 150, 0.25);
-        }
+        .input-container input::placeholder { color: rgba(255, 251, 150, 0.25); }
 
         .input-container input:focus {
             outline: none;
@@ -258,39 +246,12 @@
                 inset 0 0 10px rgba(255, 113, 206, 0.2);
         }
 
-        /* Date input needs same padding */
         input[type="date"] {
-            padding-left: 45px !important;
+            padding-left: 14px !important;
             color-scheme: dark;
         }
 
-        /* ── TERMS CHECKBOX ── */
-        .terms-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .terms-row input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
-            cursor: pointer;
-            accent-color: var(--primary);
-            flex-shrink: 0;
-        }
-
-        .terms-row label {
-            font-size: 13px;
-            color: rgba(255, 251, 150, 0.5);
-            cursor: pointer;
-            display: inline !important;
-            text-transform: none !important;
-            letter-spacing: 0 !important;
-            font-weight: 400 !important;
-        }
-
-        /* ── NEON SUBMIT BUTTON ── */
+        /* ✅ Fixed submit button - no overflow */
         .submit-btn {
             width: 100%;
             padding: 15px 40px;
@@ -305,12 +266,12 @@
             cursor: pointer;
             border-radius: var(--radius-sm);
             position: relative;
-            overflow-x: hidden;
-            overflow-y: auto;
+            overflow: hidden;
             transition: all 0.3s ease;
             box-shadow:
                 0 0 10px rgba(255, 113, 206, 0.4),
                 inset 0 0 10px rgba(255, 113, 206, 0.1);
+            box-sizing: border-box;
         }
 
         .submit-btn::before {
@@ -326,10 +287,7 @@
             transition: width 0.5s, height 0.5s;
         }
 
-        .submit-btn:hover::before {
-            width: 600px;
-            height: 600px;
-        }
+        .submit-btn:hover::before { width: 600px; height: 600px; }
 
         .submit-btn:hover {
             color: var(--white);
@@ -340,7 +298,6 @@
             transform: scale(1.02);
         }
 
-        /* ── FOOTER LINK ── */
         .form-footer {
             text-align: center;
             margin-top: 20px;
@@ -361,27 +318,16 @@
             text-shadow: 0 0 12px rgba(255, 113, 206, 0.6);
         }
 
-        /* ── RESPONSIVE ── */
         @media (max-width: 968px) {
-            .login-wrapper {
-                grid-template-columns: 1fr;
-            }
-
-            .features-side {
-                display: none;
-            }
-
-            .form-side {
-                background: linear-gradient(160deg, #001208 0%, #001f0e 50%, #000d07 100%);
-            }
-
+            .login-wrapper { grid-template-columns: 1fr; }
+            .features-side { display: none; }
+            .form-side { background: linear-gradient(160deg, #001208 0%, #001f0e 50%, #000d07 100%); }
             .form-container {
                 background: rgba(5, 1, 13, 0.85);
                 padding: 30px;
                 border-radius: 20px;
                 border: 1px solid rgba(1, 205, 254, 0.2);
                 box-shadow: 0 0 40px rgba(255, 113, 206, 0.15);
-                max-height: 90vh;
             }
         }
     </style>
@@ -389,16 +335,13 @@
 <body>
     <div class="login-wrapper">
 
-        <!-- LEFT SIDE -->
         <div class="features-side">
             <div class="brand-section">
-                <div class="brand-icon">📊</div>
                 <h1 class="brand-title">AIRA</h1>
                 <p class="brand-tagline">
                     Start analyzing interviews with AI-powered insights and advanced analytics.
                 </p>
             </div>
-
             <ul class="features-list">
                 <li>Instant Feedback Analysis</li>
                 <li>Candidate Evaluation Tools</li>
@@ -407,7 +350,6 @@
             </ul>
         </div>
 
-        <!-- RIGHT SIDE -->
         <div class="form-side">
             <div class="glow-blob-1"></div>
             <div class="glow-blob-2"></div>
@@ -425,7 +367,6 @@
                     <div class="form-group">
                         <label>Username</label>
                         <div class="input-container">
-                            <span class="field-icon">👤</span>
                             <input type="text" id="reg-username" placeholder="Choose a unique username" required>
                         </div>
                     </div>
@@ -433,23 +374,20 @@
                     <div class="form-group">
                         <label>Email Address</label>
                         <div class="input-container">
-                            <span class="field-icon">📧</span>
-                            <input type="email" id="email" placeholder="your.email@company.com" required>
+                            <input type="email" id="email" placeholder="johndoe@gmail.com" required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number</label>
                         <div class="input-container">
-                            <span class="field-icon">📱</span>
-                            <input type="tel" id="phone" placeholder="10-digit mobile number" required>
+                            <input type="tel" id="phone" placeholder="10-digit number" required>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>Date of Birth</label>
                         <div class="input-container">
-                            <span class="field-icon">📅</span>
                             <input type="date" id="dob">
                         </div>
                     </div>
@@ -459,12 +397,9 @@
                         <div class="input-container">
                             <span class="field-icon">🔒</span>
                             <input type="password" id="reg-password" placeholder="Create a strong password" required>
-                        </div>
-                    </div>
 
-                    <div class="terms-row">
-                        <input type="checkbox" id="terms" required>
-                        <label for="terms">I agree to Terms &amp; Conditions</label>
+                            <button type="button" class="toggle-password" id="toggleRegPassword">👁️</button>
+                        </div>
                     </div>
 
                     <button type="submit" class="submit-btn">Create Account</button>
@@ -479,7 +414,7 @@
 
     </div>
 
-    <div id="message" class="message" style="
+    <div id="message" style="
         position: fixed;
         top: 20px;
         left: 50%;
@@ -487,6 +422,10 @@
         z-index: 9999;
         display: none;
         min-width: 300px;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
     "></div>
 
     <script src="../Assets/js/auth.js"></script>

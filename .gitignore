@@ -1,14 +1,43 @@
 # Python virtual environment
 venv/
 .env/
-#Python cache files
+
+# Python cache files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-#VS Code
+
+# VS Code
 .vscode/
+
 # OS files
 .DS_Store
 Thumbs.db
+
+# Environment variables
 .env
+
+# Data files - never commit these
+Data/
+*.json
+*.csv
+*.wav
+*.mp3
+*.mp4
+*.webm
+
+# Test files
+test_*
+*_test.py
+tests/
+
+# ML model files
+*.task
+*.tflite
+*.h5
+*.pkl
+
+# Logs
+*.log
+logs/
