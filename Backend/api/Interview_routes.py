@@ -2,7 +2,10 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional
 import os
 import shutil
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 from datetime import datetime
 # Import models
 from Backend.Models.whisper_stt import WhisperSTT
