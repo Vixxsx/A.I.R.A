@@ -1,12 +1,11 @@
 [phases.setup]
 aptPkgs = ["libxcb1", "libxcb-dri3-0", "libgl1-mesa-glx", "libglib2.0-0"]
- 
+
 [phases.install]
 cmds = [
     "pip install --no-cache-dir opencv-python-headless",
     "pip install --no-cache-dir -r requirements.txt"
 ]
- 
+
 [start]
 cmd = "uvicorn Backend.main:app --host 0.0.0.0 --port $PORT"
- 
