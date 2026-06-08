@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from typing import List, Dict, Optional
-from deepface import DeepFace
+
 
 os.environ["DISPLAY"] = ""
 os.environ["MPLBACKEND"] = "Agg"
@@ -12,7 +12,12 @@ try:
 except ImportError:
     CV2_AVAILABLE = False
     print("⚠️ cv2 not available - emotion detection will use fallback")
-
+try:
+    from deepface import DeepFace
+    DEEPFACE_AVAILABLE = True
+except ImportError:
+    DEEPFACE_AVAILABLE = False
+    print("⚠️ DeepFace not available - emotion detection will use fallback")
 
 class EmotionDetector:
     def __init__(self):
