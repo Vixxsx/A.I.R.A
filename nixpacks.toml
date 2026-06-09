@@ -1,11 +1,11 @@
 [phases.setup]
-nixPkgs = ["libxcb", "xorg.libXcb", "xorg.libX11"]
-aptPkgs = ["libxcb1", "libxcb1-dev", "libx11-6", "libglib2.0-0", "libgl1", "libsm6", "libxext6", "libxrender1"]
+aptPkgs = ["libxcb1", "libxcb1-dev", "libx11-6", "libglib2.0-0", "libgl1", "libsm6", "libxext6", "libxrender1", "ffmpeg"]
  
 [phases.install]
 cmds = [
     "pip install --no-cache-dir opencv-python-headless",
-    "pip install --no-cache-dir -r requirements.txt"
+    "pip install --no-cache-dir -r requirements.txt",
+    "python -c \"import whisper; whisper.load_model('small')\""
 ]
  
 [start]
